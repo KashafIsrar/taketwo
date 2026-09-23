@@ -1,0 +1,7 @@
+target/
+.env.local
+application-local.yml
+*.iml
+.idea/
+.vscode/
+*.log

@@ -1,0 +1,89 @@
+:root {
+  /* --- Analog cinema palette --- */
+  --bg-primary: #121212;              /* rich charcoal */
+  --bg-surface: #0E1C15;              /* deep moody analog green */
+  --bg-surface-raised: #16281E;       /* slightly lifted green, for cards/modals */
+  --frame: #E9E2D0;                   /* warm cream, used for film-frame borders */
+  --border: #2B4433;                  /* muted green-charcoal border */
+
+  --text-primary: #F5EFE0;            /* warm off-white */
+  --text-secondary: #A9B7AC;          /* muted sage */
+  --text-muted: #6E7A70;
+
+  --accent: #C3541C;                  /* vibrant neon orange - primary interactive */
+  --accent-strong: #E06A2C;
+  --accent-amber: #E58A2B;            /* warm amber - star ratings only */
+  --danger: #900C0F;                  /* deep crimson - secondary alerts */
+  --success: #5C8A6A;
+
+  --radius: 10px;
+  --radius-lg: 16px;
+  --space-lg: 32px;
+  --space-xl: 56px;
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --glow-accent: 0 0 22px rgba(195, 84, 28, 0.35);
+  --glow-amber: 0 0 16px rgba(229, 138, 43, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-radius: 6px;
+  padding: 10px 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(195, 84, 28, 0.18);
+}
+
+/* Subtle film-grain texture, layered over surfaces that opt in via .grain */
+.grain {
+  position: relative;
+}
+
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.8) 0.6px, transparent 0.6px);
+  background-size: 3px 3px;
+}

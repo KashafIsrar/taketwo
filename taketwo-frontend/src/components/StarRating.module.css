@@ -1,0 +1,40 @@
+.row {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.star {
+  position: relative;
+  cursor: pointer;
+  line-height: 0;
+}
+
+.star.readOnly {
+  cursor: default;
+}
+
+.starBase,
+.starFill {
+  display: block;
+}
+
+.starBase {
+  color: #2b3a32; /* Deep muted forest green matching your moody theme */
+}
+
+.starFill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  color: #f39c12; /* Cinematic Wong Kar-wai amber/gold accent */
+  text-shadow: 0 0 10px rgba(243, 156, 18, 0.45); /* Rich atmospheric warm glow */
+  white-space: nowrap;
+}
+
+.value {
+  margin-left: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
