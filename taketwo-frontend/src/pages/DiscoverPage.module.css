@@ -1,19 +1,131 @@
 .page {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: var(--space-xl) 24px 60px;
 }
 
+.heroBanner {
+  margin-bottom: 32px;
+}
+
+.tagline {
+  color: var(--text-muted, #9ab);
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+
+/* Genre Chips */
+.chipContainer {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  background: #2c3440;
+  color: #c1c8d0;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.chip:hover {
+  background: #3c4450;
+  color: #fff;
+}
+
+.activeChip {
+  background: #00e054;
+  color: #14181c;
+}
+
+.activeChip:hover {
+  background: #00c048;
+}
+
+/* Rows & Carousels */
+.rowsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
 .section {
-  margin-bottom: 48px;
+  margin-bottom: 24px;
+}
+
+.categorySection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .sectionTitle {
   font-size: 18px;
   font-weight: 600;
-  margin: 0 0 14px;
+  margin: 0;
+  color: #fff;
 }
 
+.carouselWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.carousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 8px 0;
+  scrollbar-width: none; /* Firefox */
+  width: 100%;
+}
+
+.carousel::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.carouselCardWrapper {
+  min-width: 150px;
+  max-width: 150px;
+  flex-shrink: 0;
+}
+
+/* Scroll Buttons */
+.scrollBtn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background: rgba(20, 24, 28, 0.85);
+  border: 1px solid #2c3440;
+  color: #00e054;
+  font-size: 1.25rem;
+  width: 36px;
+  height: 54px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.carouselWrapper:hover .scrollBtn {
+  opacity: 1;
+}
+
+.left { left: -18px; }
+.right { right: -18px; }
+
+/* Standard Grid */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -21,13 +133,7 @@
 }
 
 .state {
-  color: var(--text-secondary);
+  color: var(--text-secondary, #9ab);
   font-size: 14px;
   padding: 20px 0;
-}
-
-.tagline {
-  color: var(--text-muted);
-  font-size: 14px;
-  margin: -10px 0 28px;
 }

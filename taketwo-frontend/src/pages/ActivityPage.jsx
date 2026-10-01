@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getActivityFeed } from '../services/api';
+import api, { getActivityFeed } from '../services/api';
 import LikeCommentSection from '../components/LikeCommentSection';
 import styles from './DiscoverPage.module.css';
 
@@ -8,6 +8,10 @@ export default function ActivityPage() {
   const [feed, setFeed] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // Notification states
+  const [notifications, setNotifications] = useState([]);
+  const [notifLoading, setNotifLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,9 +35,35 @@ export default function ActivityPage() {
       }
     }
 
+    async function loadNotifications() {
+      try {
+        const res = await api.get('/notifications');
+        if (!cancelled) {
+          setNotifications(res.data);
+        }
+      } catch (err) {
+        // fail silently if notifications aren't critical
+      } finally {
+        if (!cancelled) {
+          setNotifLoading(false);
+        }
+      }
+    }
+
     loadActivity();
+    loadNotifications();
+
     return () => { cancelled = true; };
   }, []);
+
+  async function handleMarkAllRead() {
+    try {
+      await api.post('/notifications/mark-read');
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    } catch (err) {
+      console.error('Failed to mark notifications read', err);
+    }
+  }
 
   if (loading) {
     return <div className={styles.page}><p className={styles.state}>Loading activity…</p></div>;
@@ -46,6 +76,31 @@ export default function ActivityPage() {
   return (
     <div className={styles.page}>
       <div className={styles.section} style={{ maxWidth: '700px', margin: '0 auto', padding: '2rem 1rem' }}>
+        
+        {/* Notifications Panel Box */}
+        {!notifLoading && notifications.length > 0 && (
+          <div style={{ background: '#1c2228', border: '1px solid #2c3440', borderRadius: '8px', padding: '1rem', marginBottom: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1rem', color: '#fff' }}>Notifications</h3>
+              <button onClick={handleMarkAllRead} style={{ background: 'none', border: 'none', color: '#00e054', cursor: 'pointer', fontSize: '0.8rem' }}>
+                Mark all read
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {notifications.map((n) => (
+                <div key={n.id} style={{ fontSize: '0.85rem', color: n.read ? '#9ab' : '#fff', padding: '0.4rem 0', borderLeft: n.read ? 'none' : '3px solid #00e054', paddingLeft: n.read ? 0 : '0.5rem' }}>
+                  <Link to={`/user/${n.actor.userId}`} style={{ color: '#00e054', fontWeight: 'bold', textDecoration: 'none' }}>
+                    @{n.actor.username}
+                  </Link>{' '}
+                  {n.type === 'LIKE' ? 'liked' : 'commented on'} your review of{' '}
+                  <strong>{n.movie.title}</strong>
+                  {n.commentPreview && <span style={{ color: '#667' }}> — "{n.commentPreview}"</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <h2 className={styles.sectionTitle} style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid #2c3440', paddingBottom: '0.5rem', color: '#fff' }}>Friend Activity</h2>
         {!feed || feed.length === 0 ? (
           <div style={{ background: '#1c2228', padding: '2rem', borderRadius: '8px', textAlign: 'center', color: '#9ab', border: '1px solid #2c3440' }}>

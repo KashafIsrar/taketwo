@@ -19,6 +19,7 @@ public class LikeService {
 
     private final LogLikeRepository logLikeRepository;
     private final MovieLogRepository movieLogRepository;
+    private final NotificationService notificationService; // Added for notifications
 
     @Transactional
     public LikeStatusResponse toggleLike(User currentUser, UUID movieLogId) {
@@ -34,6 +35,7 @@ public class LikeService {
         } else {
             logLikeRepository.save(LogLike.builder().user(currentUser).movieLog(movieLog).build());
             nowLiked = true;
+            notificationService.notifyLike(currentUser, movieLog); // Triggers notification when liked
         }
 
         return new LikeStatusResponse(nowLiked, logLikeRepository.countByMovieLog_Id(movieLogId));

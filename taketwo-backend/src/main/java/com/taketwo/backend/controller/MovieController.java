@@ -33,7 +33,17 @@ public class MovieController {
         return movieService.search(q, page);
     }
 
-    // Viewing a detail page is one of the two cache-on-demand triggers.
+    // Updated discover endpoint now accepts an optional 'page' parameter for infinite scrolling/pagination
+    @GetMapping("/discover")
+    public List<MovieSummaryResponse> discover(
+            @RequestParam(required = false) String with_genres,
+            @RequestParam(required = false) String primary_release_year,
+            @RequestParam(required = false) String sort_by,
+            @RequestParam(defaultValue = "1") int page
+    ) {
+        return movieService.discoverMovies(with_genres, primary_release_year, sort_by, page);
+    }
+
     @GetMapping("/{tmdbId}")
     public MovieDetailResponse detail(@PathVariable Long tmdbId) {
         return movieService.getDetail(tmdbId);

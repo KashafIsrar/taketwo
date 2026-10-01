@@ -58,6 +58,33 @@ public class TmdbClient {
     }
 
     /**
+     * DISCOVER METHOD ADDED: Queries TMDB's official discover endpoint
+     * so that genres, release years, and sort orders return completely unique items.
+     */
+    public TmdbPagedResponse<TmdbMovieDto> discoverMovies(String withGenres, String releaseYear, String sortBy, int page) {
+        return restClient.get()
+                .uri(uriBuilder -> {
+                    uriBuilder.path("/discover/movie")
+                            .queryParam("api_key", apiKey)
+                            .queryParam("page", page);
+                    
+                    if (withGenres != null && !withGenres.isEmpty()) {
+                        uriBuilder.queryParam("with_genres", withGenres);
+                    }
+                    if (releaseYear != null && !releaseYear.isEmpty()) {
+                        uriBuilder.queryParam("primary_release_year", releaseYear);
+                    }
+                    if (sortBy != null && !sortBy.isEmpty()) {
+                        uriBuilder.queryParam("sort_by", sortBy);
+                    }
+                    
+                    return uriBuilder.build();
+                })
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {});
+    }
+
+    /**
      * Returns null if TMDB doesn't have a movie with this id, rather than
      * throwing - callers (MovieCacheService) turn that into a clean 404.
      */

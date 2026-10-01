@@ -21,6 +21,7 @@ public class CommentService {
 
     private final LogCommentRepository logCommentRepository;
     private final MovieLogRepository movieLogRepository;
+    private final NotificationService notificationService; // Added for notifications
 
     @Transactional
     public CommentResponse addComment(User currentUser, UUID movieLogId, String commentText) {
@@ -30,6 +31,8 @@ public class CommentService {
         LogComment comment = logCommentRepository.save(
                 LogComment.builder().user(currentUser).movieLog(movieLog).commentText(commentText).build()
         );
+
+        notificationService.notifyComment(currentUser, movieLog, commentText); // Triggers notification when commented
 
         return toResponse(comment);
     }

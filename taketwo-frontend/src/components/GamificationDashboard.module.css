@@ -1,0 +1,142 @@
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 20px;
+  color: #fff;
+  background: #141414;
+  border-radius: 12px;
+  font-family: inherit;
+}
+
+.container h2 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 10px;
+}
+
+.section {
+  margin-top: 30px;
+}
+
+.section h3 {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  color: #e50914;
+}
+
+.streakCard {
+  display: flex;
+  gap: 20px;
+}
+
+.streakItem {
+  flex: 1;
+  background: #1f1f1f;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.streakInfo h3 {
+  font-size: 1.8rem;
+  margin: 0;
+  color: #fff;
+}
+
+.streakInfo p {
+  margin: 5px 0 0 0;
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.badgeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 15px;
+}
+
+.badgeItem {
+  background: #1f1f1f;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.badgeItem.unlocked {
+  border-color: #e50914;
+}
+
+.badgeItem h4 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+}
+
+.badgeItem p {
+  margin: 0 0 10px 0;
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  color: #888;
+}
+
+.badgeItem.unlocked .status {
+  color: #e50914;
+}
+
+.challengeCard {
+  background: #1f1f1f;
+  padding: 15px 20px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.challengeInfo h4 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+}
+
+.challengeInfo p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.progressWrapper {
+  text-align: right;
+}
+
+.progressWrapper span {
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.progressBar {
+  width: 120px;
+  height: 8px;
+  background: #333;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.progressFill {
+  height: 100%;
+  background: #e50914;
+}
+
+.loading {
+  text-align: center;
+  color: #888;
+  padding: 40px;
+}

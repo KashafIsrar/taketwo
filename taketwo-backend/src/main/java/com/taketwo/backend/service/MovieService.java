@@ -3,6 +3,8 @@ package com.taketwo.backend.service;
 import com.taketwo.backend.dto.MovieDetailResponse;
 import com.taketwo.backend.dto.MovieSummaryResponse;
 import com.taketwo.backend.tmdb.TmdbClient;
+import com.taketwo.backend.tmdb.dto.TmdbMovieDto;
+import com.taketwo.backend.tmdb.dto.TmdbPagedResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,9 +18,6 @@ public class MovieService {
     private final MovieCacheService movieCacheService;
     private final MovieMapper movieMapper;
 
-    // Browsing endpoints deliberately do NOT persist anything - per the
-    // cache-on-demand rule, a movie only enters our DB once someone views
-    // its detail page or logs/watchlists it.
     public List<MovieSummaryResponse> getPopular(int page) {
         return tmdbClient.getPopularMovies(page).results().stream()
                 .map(movieMapper::toSummary)
@@ -35,6 +34,19 @@ public class MovieService {
         return tmdbClient.searchMovies(query, page).results().stream()
                 .map(movieMapper::toSummary)
                 .toList();
+    }
+
+    // Updated to accept 'int page' so your frontend can fetch page 2, 3, etc., as the user scrolls
+    public List<MovieSummaryResponse> discoverMovies(String withGenres, String releaseYear, String sortBy, int page) {
+        TmdbPagedResponse<TmdbMovieDto> response = tmdbClient.discoverMovies(withGenres, releaseYear, sortBy, page);
+
+        if (response != null && response.results() != null) {
+            return response.results().stream()
+                    .map(movieMapper::toSummary)
+                    .toList();
+        }
+
+        return List.of();
     }
 
     public MovieDetailResponse getDetail(Long tmdbId) {

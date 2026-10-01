@@ -14,6 +14,6 @@ public record ProfileResponse(
         Double averageRating,   // null if the user hasn't logged anything yet
         long followerCount,
         long followingCount,
-        List<Map<String, Object>> favoriteMovies
+        List<Map<String, Object>> favoriteMovies,
         Boolean isFollowing
 ) {}

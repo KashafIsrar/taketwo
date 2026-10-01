@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import api, { getUserProfile, searchMovies } from '../services/api';
 import FollowButton from '../components/FollowButton';
+import GamificationDashboard from '../components/GamificationDashboard.jsx';
 
 const AVATAR_CATEGORIES = [
   {
@@ -63,10 +64,11 @@ const AVATAR_CATEGORIES = [
   {
     category: 'Dark',
     avatars: [
-      { id: 'shk_1', name: 'Jonas Kahnwald', url: 'https://i.pinimg.com/736x/21/da/9d/21da9d1a81458d6204bfd8e1ee396d68.jpg' }
+      { id: 'dark_1', name: 'Jonas Kahnwald', url: 'https://i.pinimg.com/736x/21/da/9d/21da9d1a81458d6204bfd8e1ee396d68.jpg' }
     ]
   }
 ];
+
 export default function ProfilePage() {
   const { userId: paramUserId } = useParams();
   const { user } = useAuth();
@@ -218,9 +220,9 @@ export default function ProfilePage() {
     }
   };
 
-  if (loading) return <div style={{ color: '#fff', padding: '2rem' }}>Loading profile…</div>;
-  if (error) return <div style={{ color: '#ff4e4e', padding: '2rem' }}>{error}</div>;
-  if (!profile) return <div style={{ color: '#fff', padding: '2rem' }}>User not found.</div>;
+  if (loading) return <div style={{ color: '#fff', padding: '3rem', textAlign: 'center' }}>Loading profile…</div>;
+  if (error) return <div style={{ color: '#ff4e4e', padding: '3rem', textAlign: 'center' }}>{error}</div>;
+  if (!profile) return <div style={{ color: '#fff', padding: '3rem', textAlign: 'center' }}>User not found.</div>;
 
   const isSelf = String(activeUserId) === String(userId);
   const favoriteFour = profile.favoriteMovies || [];
@@ -230,7 +232,7 @@ export default function ProfilePage() {
       
       {/* Profile Header & Bio Section */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', marginBottom: '2rem' }}>
-        <div style={{ width: '90px', height: '90px', borderRadius: '50%', background: '#2c3440', overflow: 'hidden', flexShrink: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #3c4450' }}>
+        <div style={{ width: '90px', height: '90px', borderRadius: '50%', background: '#2c3440', overflow: 'hidden', flexShrink: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #3c4450', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
           {profile.profilePictureUrl ? (
             <img src={profile.profilePictureUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
@@ -251,7 +253,9 @@ export default function ProfilePage() {
               {isSelf && (
                 <button 
                   onClick={() => setIsEditingProfile(true)}
-                  style={{ background: '#2c3440', color: '#fff', border: '1px solid #4c5460', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem' }}
+                  style={{ background: '#2c3440', color: '#fff', border: '1px solid #4c5460', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem', transition: 'background 0.2s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#3c4450'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = '#2c3440'}
                 >
                   Edit Profile
                 </button>
@@ -297,7 +301,21 @@ export default function ProfilePage() {
                   overflow: 'hidden',
                   position: 'relative',
                   cursor: isSelf ? 'pointer' : 'default',
-                  transition: 'border-color 0.2s'
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  if (isSelf) {
+                    e.currentTarget.style.transform = 'translateY(-3px)';
+                    e.currentTarget.style.borderColor = '#00e054';
+                    e.currentTarget.style.boxShadow = '0 6px 16px rgba(0,224,84,0.15)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (isSelf) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.borderColor = '#2c3440';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
                 }}
                 title={isSelf ? "Click to set favorite film" : ""}
               >
@@ -316,10 +334,76 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* Edit Profile Modal with Categorized Netflix-Style Character Headshots */}
+      {/* Stats Bar */}
+      <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem', background: '#1c2228', padding: '1.5rem', borderRadius: '8px', border: '1px solid #2c3440', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+        <div>
+          <h3 style={{ margin: 0, color: '#00e054', fontSize: '1.5rem' }}>{profile.totalLoggedFilms || profile.totalLogged || 0}</h3>
+          <p style={{ margin: '0.25rem 0 0 0', color: '#9ab', fontSize: '0.85rem' }}>Films Logged</p>
+        </div>
+        <div>
+          <h3 style={{ margin: 0, color: '#00e054', fontSize: '1.5rem' }}>{profile.averageRating ? profile.averageRating.toFixed(1) : 'N/A'}</h3>
+          <p style={{ margin: '0.25rem 0 0 0', color: '#9ab', fontSize: '0.85rem' }}>Avg Rating</p>
+        </div>
+        <div style={{ cursor: 'pointer' }} onClick={() => setActiveTab('followers')}>
+          <h3 style={{ margin: 0, color: '#00e054', fontSize: '1.5rem' }}>{profile.followerCount || 0}</h3>
+          <p style={{ margin: '0.25rem 0 0 0', color: '#9ab', fontSize: '0.85rem', textDecoration: 'underline' }}>Followers</p>
+        </div>
+        <div style={{ cursor: 'pointer' }} onClick={() => setActiveTab('following')}>
+          <h3 style={{ margin: 0, color: '#00e054', fontSize: '1.5rem' }}>{profile.followingCount || 0}</h3>
+          <p style={{ margin: '0.25rem 0 0 0', color: '#9ab', fontSize: '0.85rem', textDecoration: 'underline' }}>Following</p>
+        </div>
+      </div>
+
+      {/* Gamification Dashboard (Always Visible) */}
+      <div style={{ marginBottom: '2rem' }}>
+        <GamificationDashboard userId={userId} />
+      </div>
+
+      {/* Profile Navigation Tabs */}
+      <div style={{ display: 'flex', gap: '1.5rem', borderBottom: '1px solid #2c3440', marginBottom: '1.5rem', paddingBottom: '0.5rem' }}>
+        <button onClick={() => setActiveTab('overview')} style={{ background: 'none', border: 'none', color: activeTab === 'overview' ? '#00e054' : '#9ab', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', padding: 0 }}>Overview</button>
+        <button onClick={() => setActiveTab('followers')} style={{ background: 'none', border: 'none', color: activeTab === 'followers' ? '#00e054' : '#9ab', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', padding: 0 }}>Followers ({profile.followerCount || 0})</button>
+        <button onClick={() => setActiveTab('following')} style={{ background: 'none', border: 'none', color: activeTab === 'following' ? '#00e054' : '#888', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', padding: 0 }}>Following ({profile.followingCount || 0})</button>
+      </div>
+
+      {activeTab === 'overview' && (
+        <div style={{ color: '#9ab' }}>
+          <p>Welcome to {profile.username}'s profile overview.</p>
+        </div>
+      )}
+      
+      {activeTab === 'followers' && (
+        <div>
+          {listLoading ? <p style={{ color: '#888' }}>Loading…</p> : followersList.length === 0 ? <p style={{ color: '#888' }}>No followers yet.</p> : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {followersList.map(f => (
+                <div key={f.id || f.userId} style={{ background: '#1c2228', padding: '0.75rem 1rem', borderRadius: '6px', border: '1px solid #2c3440' }}>
+                  <Link to={`/user/${f.id || f.userId}`} style={{ color: '#fff', textDecoration: 'none', fontWeight: '500' }}>@{f.username}</Link>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'following' && (
+        <div>
+          {listLoading ? <p style={{ color: '#888' }}>Loading…</p> : followingList.length === 0 ? <p style={{ color: '#888' }}>Not following anyone yet.</p> : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {followingList.map(f => (
+                <div key={f.id || f.userId} style={{ background: '#1c2228', padding: '0.75rem 1rem', borderRadius: '6px', border: '1px solid #2c3440' }}>
+                  <Link to={`/user/${f.id || f.userId}`} style={{ color: '#fff', textDecoration: 'none', fontWeight: '500' }}>@{f.username}</Link>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Edit Profile Modal */}
       {isEditingProfile && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div style={{ background: '#1c2228', border: '1px solid #2c3440', padding: '1.5rem', borderRadius: '8px', width: '100%', maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem', backdropFilter: 'blur(4px)' }}>
+          <div style={{ background: '#1c2228', border: '1px solid #2c3440', padding: '1.5rem', borderRadius: '8px', width: '100%', maxWidth: '520px', display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#fff' }}>Edit Profile</h3>
               <button onClick={() => setIsEditingProfile(false)} style={{ background: 'none', border: 'none', color: '#9ab', cursor: 'pointer', fontSize: '1.25rem' }}>&times;</button>
@@ -406,8 +490,8 @@ export default function ProfilePage() {
 
       {/* Movie Search Modal for Favorite Four */}
       {isSelectingSlot !== null && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-          <div style={{ background: '#1c2228', border: '1px solid #2c3440', padding: '1.5rem', borderRadius: '8px', width: '100%', maxWidth: '450px', display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem', backdropFilter: 'blur(4px)' }}>
+          <div style={{ background: '#1c2228', border: '1px solid #2c3440', padding: '1.5rem', borderRadius: '8px', width: '100%', maxWidth: '450px', display: 'flex', flexDirection: 'column', gap: '1rem', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#fff' }}>Select Favorite Film #{isSelectingSlot + 1}</h3>
               <button onClick={() => { setIsSelectingSlot(null); setSearchQuery(''); setSearchResults([]); }} style={{ background: 'none', border: 'none', color: '#9ab', cursor: 'pointer', fontSize: '1.25rem' }}>&times;</button>
@@ -456,63 +540,6 @@ export default function ProfilePage() {
               ))}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Stats Bar */}
-      <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem', background: '#1c2228', padding: '1.5rem', borderRadius: '8px', border: '1px solid #2c3440' }}>
-        <div>
-          <h3 style={{ margin: 0, color: '#00e054', fontSize: '1.5rem' }}>{profile.totalLoggedFilms || profile.totalLogged || 0}</h3>
-          <p style={{ margin: '0.25rem 0 0 0', color: '#9ab', fontSize: '0.85rem' }}>Films Logged</p>
-        </div>
-        <div>
-          <h3 style={{ margin: 0, color: '#00e054', fontSize: '1.5rem' }}>{profile.averageRating ? profile.averageRating.toFixed(1) : 'N/A'}</h3>
-          <p style={{ margin: '0.25rem 0 0 0', color: '#9ab', fontSize: '0.85rem' }}>Avg Rating</p>
-        </div>
-        <div style={{ cursor: 'pointer' }} onClick={() => setActiveTab('followers')}>
-          <h3 style={{ margin: 0, color: '#00e054', fontSize: '1.5rem' }}>{profile.followerCount || 0}</h3>
-          <p style={{ margin: '0.25rem 0 0 0', color: '#9ab', fontSize: '0.85rem', textDecoration: 'underline' }}>Followers</p>
-        </div>
-        <div style={{ cursor: 'pointer' }} onClick={() => setActiveTab('following')}>
-          <h3 style={{ margin: 0, color: '#00e054', fontSize: '1.5rem' }}>{profile.followingCount || 0}</h3>
-          <p style={{ margin: '0.25rem 0 0 0', color: '#9ab', fontSize: '0.85rem', textDecoration: 'underline' }}>Following</p>
-        </div>
-      </div>
-
-      {/* Profile Navigation Tabs */}
-      <div style={{ display: 'flex', gap: '1.5rem', borderBottom: '1px solid #2c3440', marginBottom: '1.5rem', paddingBottom: '0.5rem' }}>
-        <button onClick={() => setActiveTab('overview')} style={{ background: 'none', border: 'none', color: activeTab === 'overview' ? '#00e054' : '#9ab', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', padding: 0 }}>Overview</button>
-        <button onClick={() => setActiveTab('followers')} style={{ background: 'none', border: 'none', color: activeTab === 'followers' ? '#00e054' : '#9ab', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', padding: 0 }}>Followers ({profile.followerCount || 0})</button>
-        <button onClick={() => setActiveTab('following')} style={{ background: 'none', border: 'none', color: activeTab === 'following' ? '#00e054' : '#888', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem', padding: 0 }}>Following ({profile.followingCount || 0})</button>
-      </div>
-
-      {activeTab === 'overview' && <div style={{ color: '#9ab' }}><p>Welcome to {profile.username}'s profile overview.</p></div>}
-      
-      {activeTab === 'followers' && (
-        <div>
-          {listLoading ? <p style={{ color: '#888' }}>Loading…</p> : followersList.length === 0 ? <p style={{ color: '#888' }}>No followers yet.</p> : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {followersList.map(f => (
-                <div key={f.id || f.userId} style={{ background: '#1c2228', padding: '0.75rem 1rem', borderRadius: '6px', border: '1px solid #2c3440' }}>
-                  <Link to={`/user/${f.id || f.userId}`} style={{ color: '#fff', textDecoration: 'none', fontWeight: '500' }}>@{f.username}</Link>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === 'following' && (
-        <div>
-          {listLoading ? <p style={{ color: '#888' }}>Loading…</p> : followingList.length === 0 ? <p style={{ color: '#888' }}>Not following anyone yet.</p> : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {followingList.map(f => (
-                <div key={f.id || f.userId} style={{ background: '#1c2228', padding: '0.75rem 1rem', borderRadius: '6px', border: '1px solid #2c3440' }}>
-                  <Link to={`/user/${f.id || f.userId}`} style={{ color: '#fff', textDecoration: 'none', fontWeight: '500' }}>@{f.username}</Link>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       )}
     </div>
