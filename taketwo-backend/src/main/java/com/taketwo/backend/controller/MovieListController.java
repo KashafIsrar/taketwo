@@ -4,6 +4,9 @@ import com.taketwo.backend.entity.MovieList;
 import com.taketwo.backend.entity.User;
 import com.taketwo.backend.repository.UserRepository;
 import com.taketwo.backend.service.MovieListService;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +55,7 @@ public class MovieListController {
 
     @PostMapping
     public ResponseEntity<MovieList> createList(
-            @RequestBody CreateListRequest request,
+            @Valid @RequestBody CreateListRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
         User user = getAuthenticatedUser(userDetails);
         if (user == null) return ResponseEntity.status(401).build();
@@ -86,8 +89,11 @@ public class MovieListController {
 
     @Data
     public static class CreateListRequest {
+        @NotBlank
         private String title;
         private String description;
+
+        @JsonProperty("isPrivate")
         private boolean isPrivate;
     }
 

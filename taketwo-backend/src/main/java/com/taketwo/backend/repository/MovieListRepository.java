@@ -7,5 +7,5 @@ import java.util.UUID;
 
 public interface MovieListRepository extends JpaRepository<MovieList, UUID> {
     List<MovieList> findByUserIdOrderByCreatedAtDesc(UUID userId);
-    List<MovieList> findByUserIdAndIsPrivateFalseOrderByCreatedAtDesc(UUID userId);
+    List<MovieList> findByUserIdAndIsPublicTrueOrderByCreatedAtDesc(UUID userId);
 }

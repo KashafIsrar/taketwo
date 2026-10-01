@@ -37,8 +37,8 @@ public class MovieList {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "is_private", nullable = false)
-    private boolean isPrivate = false;
+    @Column(name = "is_public", nullable = false)
+    private boolean isPublic = true;
 
     @OneToMany(mappedBy = "movieList", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("position ASC")

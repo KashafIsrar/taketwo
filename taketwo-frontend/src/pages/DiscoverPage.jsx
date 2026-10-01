@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import MovieCard from '../components/MovieCard.jsx';
 import * as movieService from '../services/movieService';
-import { getActivityFeed } from '../services/api';
 import styles from './DiscoverPage.module.css';
 
 function MovieGrid({ movies }) {
@@ -15,40 +14,10 @@ function MovieGrid({ movies }) {
   );
 }
 
-function ActivityFeed({ feed }) {
-  if (!feed || feed.length === 0) {
-    return (
-      <div className={styles.emptyFeed}>
-        <p>No friend activity yet. Follow other members to see their logs here!</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className={styles.feedList}>
-      {feed.map((log) => (
-        <div key={log.id} className={styles.feedCard}>
-          <div className={styles.feedHeader}>
-            <span className={styles.username}>
-              <Link to={`/user/${log.user?.id}`}>{log.user?.username || 'Someone'}</Link>
-            </span>
-            <span className={styles.actionText}> watched </span>
-            <span className={styles.movieTitle}>{log.movie?.title}</span>
-            <span className={styles.rating}> ★ {log.rating}</span>
-          </div>
-          {log.review && <p className={styles.review}>"{log.review}"</p>}
-          <span className={styles.date}>{new Date(log.watchedDate).toLocaleDateString()}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export default function DiscoverPage() {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q');
 
-  const [feed, setFeed] = useState([]);
   const [trending, setTrending] = useState([]);
   const [popular, setPopular] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
@@ -66,13 +35,11 @@ export default function DiscoverPage() {
           const results = await movieService.searchMovies(query);
           if (!cancelled) setSearchResults(results);
         } else {
-          const [feedRes, trendingRes, popularRes] = await Promise.all([
-            getActivityFeed().catch(() => []),
+          const [trendingRes, popularRes] = await Promise.all([
             movieService.getTrending('week'),
             movieService.getPopular(1),
           ]);
           if (!cancelled) {
-            setFeed(feedRes);
             setTrending(trendingRes);
             setPopular(popularRes);
           }
@@ -114,12 +81,6 @@ export default function DiscoverPage() {
   return (
     <div className={styles.page}>
       <p className={styles.tagline}>Find your next obsession.</p>
-
-      {/* Activity Feed Section */}
-      <div className={styles.section}>
-        <h2 className={styles.sectionTitle}>Friend Activity</h2>
-        <ActivityFeed feed={feed} />
-      </div>
 
       <div className={styles.section}>
         <h2 className={styles.sectionTitle}>Trending this week</h2>

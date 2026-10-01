@@ -28,7 +28,7 @@ public class MovieListService {
         if (userId.equals(currentUserId)) {
             return movieListRepository.findByUserIdOrderByCreatedAtDesc(userId);
         }
-        return movieListRepository.findByUserIdAndIsPrivateFalseOrderByCreatedAtDesc(userId);
+        return movieListRepository.findByUserIdAndIsPublicTrueOrderByCreatedAtDesc(userId);
     }
 
     public MovieList getListById(UUID listId) {
@@ -42,7 +42,7 @@ public class MovieListService {
                 .user(user)
                 .title(title)
                 .description(description)
-                .isPrivate(isPrivate)
+                .isPublic(!isPrivate)
                 .build();
         return movieListRepository.save(list);
     }

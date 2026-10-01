@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { toggleFollow } from '../services/api';
-import axios from 'axios';
+import api, { toggleFollow } from '../services/api';
 
 export default function MembersPage() {
   const { user, isAuthenticated } = useAuth();
@@ -21,7 +20,7 @@ export default function MembersPage() {
     setError('');
 
     try {
-      const response = await axios.get(`/api/users/search?q=${encodeURIComponent(query.trim())}`);
+      const response = await api.get('/users/search', { params: { q: query.trim() } });
       setUsers(response.data);
     } catch (err) {
       console.error('Failed to search users', err);
@@ -89,7 +88,7 @@ export default function MembersPage() {
               background: '#1c2228',
               borderRadius: '8px',
               display: 'flex',
-              justify: 'space-between',
+              justifyContent: 'space-between',
               alignItems: 'center',
             }}
           >

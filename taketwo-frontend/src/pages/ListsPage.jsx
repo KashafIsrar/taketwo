@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
-import { getUserLists, createList } from '../services/api';
 import * as movieService from '../services/movieService';
+import { getUserLists, createMovieList as createList } from '../services/movieService';
 
 // Sub-component to fetch and display individual movie details from TMDB ID
 function MovieListItemCard({ tmdbId }) {

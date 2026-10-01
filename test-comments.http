@@ -1,0 +1,25 @@
+@baseUrl = http://localhost:8080
+@username = user1testing@gmail.com
+@password = User123@
+@logId = 05137958-27d0-4438-a348-6f1bb8b0e73a
+
+### 1) Login and save JWT token
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "emailOrUsername": "{{username}}",
+  "password": "{{password}}"
+}
+
+### 2) Use token from login response for authenticated comment request
+@token = {{login.response.body.token}}
+
+POST {{baseUrl}}/api/movies/logs/{{logId}}/comments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "commentText": "This is a test comment from VS Code REST Client."
+}

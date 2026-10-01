@@ -5,7 +5,7 @@ import com.taketwo.backend.dto.LoginRequest;
 import com.taketwo.backend.dto.RegisterRequest;
 import com.taketwo.backend.entity.User;
 import com.taketwo.backend.repository.UserRepository;
-import com.taketwo.backend.security.JwtService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

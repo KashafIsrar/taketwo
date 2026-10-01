@@ -72,4 +72,11 @@ export const deleteList = async (listId) => {
   return response.data;
 };
 
+export const searchMovies = async (query) => {
+  const response = await api.get('/movies/search', {
+    params: { q: query } // Changed from 'query' to 'q' to match MovieController
+  });
+  return response.data;
+};
+
 export default api;

@@ -34,7 +34,7 @@ taketwo:
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}   # 24h access token
 
   tmdb:
-    api-key: ${TMDB_API_KEY:}
+    api-key: ${TMDB_API_KEY:ea2f280500d60c08d68d2a4e51dbf702}
     base-url: https://api.themoviedb.org/3
     image-base-url: https://image.tmdb.org/t/p
 

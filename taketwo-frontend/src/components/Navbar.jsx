@@ -8,6 +8,9 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
 
+  // Check every possible place the user ID could be stored
+  const userId = user?.id || user?.userId || user?._id || localStorage.getItem('userId');
+
   function handleSearch(e) {
     e.preventDefault();
     if (query.trim()) {
@@ -28,6 +31,7 @@ export default function Navbar() {
         <Link to="/">Discover</Link>
         {isAuthenticated && (
           <>
+            <Link to="/activity">Activity</Link>
             <Link to="/members">Members</Link>
             <Link to="/diary">Diary</Link>
             <Link to="/lists">Lists</Link>
@@ -47,7 +51,16 @@ export default function Navbar() {
       <div className={styles.right}>
         {isAuthenticated ? (
           <>
-            <span className={styles.username}>{user.displayName || user.username}</span>
+            {userId ? (
+              <Link to={`/user/${userId}`} className={styles.username} style={{ textDecoration: 'none', color: '#00e054', fontWeight: 'bold' }}>
+                {user.displayName || user.username}
+              </Link>
+            ) : (
+              // Fallback if ID is missing: link to the members page so you can find your profile easily
+              <Link to="/members" className={styles.username} style={{ textDecoration: 'none', color: '#00e054' }}>
+                {user?.displayName || user?.username || 'Profile'}
+              </Link>
+            )}
             <button className={styles.logoutBtn} onClick={handleLogout}>Log out</button>
           </>
         ) : (
