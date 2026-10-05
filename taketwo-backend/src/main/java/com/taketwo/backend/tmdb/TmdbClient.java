@@ -1,8 +1,11 @@
 package com.taketwo.backend.tmdb;
 
+import com.taketwo.backend.tmdb.dto.TmdbCreditsDto;
 import com.taketwo.backend.tmdb.dto.TmdbMovieDetailsDto;
 import com.taketwo.backend.tmdb.dto.TmdbMovieDto;
 import com.taketwo.backend.tmdb.dto.TmdbPagedResponse;
+import com.taketwo.backend.tmdb.dto.TmdbPersonMovieCreditsDto;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
@@ -100,4 +103,63 @@ public class TmdbClient {
             return null;
         }
     }
+    // Add to TmdbClient.java
+
+public TmdbCreditsDto getMovieCredits(Long tmdbId) {
+    try {
+        return restClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/movie/{id}/credits")
+                        .queryParam("api_key", apiKey)
+                        .build(tmdbId))
+                .retrieve()
+                .body(TmdbCreditsDto.class);
+    } catch (HttpClientErrorException.NotFound ex) {
+        return null;
+    }
+}
+
+public TmdbPersonMovieCreditsDto getPersonFilmography(Long tmdbPersonId) {
+    try {
+        return restClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/person/{id}/movie_credits")
+                        .queryParam("api_key", apiKey)
+                        .build(tmdbPersonId))
+                .retrieve()
+                .body(TmdbPersonMovieCreditsDto.class);
+    } catch (HttpClientErrorException.NotFound ex) {
+        return null;
+    }
+}
+
+// New overload, separate from the existing 4-arg discoverMovies used by the
+// Discover page's genre chips - TAKE TWO additionally needs runtime cap and
+// a minimum vote count (the actual mechanism behind "hidden gem" filtering,
+// since our local Movie cache never stored vote_count).
+public TmdbPagedResponse<TmdbMovieDto> discoverMoviesForTakeTwo(
+        String withGenres, Integer maxRuntimeMinutes, Integer minVoteCount, Integer maxVoteCount, int page
+) {
+    return restClient.get()
+            .uri(uriBuilder -> {
+                uriBuilder.path("/discover/movie")
+                        .queryParam("api_key", apiKey)
+                        .queryParam("page", page)
+                        .queryParam("sort_by", "popularity.desc");
+
+                if (withGenres != null && !withGenres.isEmpty()) {
+                    uriBuilder.queryParam("with_genres", withGenres);
+                }
+                if (maxRuntimeMinutes != null) {
+                    uriBuilder.queryParam("with_runtime.lte", maxRuntimeMinutes);
+                }
+                if (minVoteCount != null) {
+                    uriBuilder.queryParam("vote_count.gte", minVoteCount);
+                }
+                if (maxVoteCount != null) {
+                    uriBuilder.queryParam("vote_count.lte", maxVoteCount);
+                }
+                return uriBuilder.build();
+            })
+            .retrieve()
+            .body(new ParameterizedTypeReference<>() {});
+}
 }

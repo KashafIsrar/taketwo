@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import MovieCard from '../components/MovieCard.jsx';
+import TakeTwoCallout from '../components/TakeTwoCallout.jsx';
 import * as movieService from '../services/movieService';
 import api from '../services/api';
 import styles from './DiscoverPage.module.css';
@@ -202,6 +203,7 @@ export default function DiscoverPage() {
           </div>
         ) : (
           <>
+            <TakeTwoCallout />
             {renderCarousel('Newly Released (2026)', nowPlaying, nowPlayingRef)}
             {renderCarousel('Trending This Week', trending, trendingRef)}
             {renderCarousel('Popular All-Time', popular, popularRef)}

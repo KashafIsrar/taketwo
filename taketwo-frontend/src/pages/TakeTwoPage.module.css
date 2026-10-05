@@ -1,0 +1,159 @@
+/* pages/TakeTwoPage.module.css */
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+  color: #fff;
+}
+
+.title {
+  font-size: 2rem;
+  margin: 0 0 0.25rem;
+}
+
+.subtitle {
+  color: #9ab;
+  margin: 0 0 2rem;
+  font-size: 0.95rem;
+}
+
+.wizard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.step h3 {
+  font-size: 0.95rem;
+  color: #fff;
+  margin: 0 0 0.75rem;
+}
+
+.chipGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  background: #1c2228;
+  border: 1px solid #2c3440;
+  color: #9ab;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.chip:hover {
+  border-color: #4c5460;
+  color: #fff;
+}
+
+.chipActive {
+  background: #00e054;
+  border-color: #00e054;
+  color: #14181c;
+  font-weight: bold;
+}
+
+.submitBtn {
+  background: #00e054;
+  border: none;
+  color: #14181c;
+  padding: 0.85rem;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #ff4e4e;
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+  background: #1c2228;
+  border: 1px solid #2c3440;
+  border-radius: 8px;
+  padding: 2rem 1.5rem;
+}
+
+.matchBadge {
+  background: #00e054;
+  color: #14181c;
+  font-weight: bold;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.9rem;
+  border-radius: 20px;
+}
+
+.poster {
+  width: 180px;
+  border-radius: 6px;
+  margin: 0.5rem 0;
+}
+
+.explanation {
+  color: #c1c8d0;
+  font-size: 0.95rem;
+  max-width: 420px;
+  line-height: 1.5;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.tag {
+  background: #14181c;
+  border: 1px solid #2c3440;
+  color: #9ab;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 20px;
+}
+
+.resultActions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.primaryBtn, .secondaryBtn {
+  padding: 0.6rem 1.25rem;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.primaryBtn {
+  background: #00e054;
+  color: #14181c;
+  border: none;
+}
+
+.secondaryBtn {
+  background: transparent;
+  color: #9ab;
+  border: 1px solid #2c3440;
+}

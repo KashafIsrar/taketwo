@@ -16,8 +16,6 @@ spring:
 
   jpa:
     hibernate:
-      # 'update' for local dev only. Use 'validate' once we introduce
-      # Flyway/Liquibase migrations in a later phase - never 'update' in prod.
       ddl-auto: update
     show-sql: false
     properties:
@@ -28,10 +26,8 @@ spring:
 # --- TAKETWO-specific config ---
 taketwo:
   jwt:
-    # Overridden via env var in every real environment. This default is
-    # for local dev only and must never be used in staging/prod.
     secret: ${JWT_SECRET:dev-only-secret-change-me-please-this-is-not-secure}
-    expiration-ms: ${JWT_EXPIRATION_MS:86400000}   # 24h access token
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
 
   tmdb:
     api-key: ${TMDB_API_KEY:ea2f280500d60c08d68d2a4e51dbf702}
@@ -40,9 +36,6 @@ taketwo:
 
 logging:
   level:
-    com.taketwo: INFO
-    org.springframework.security: INFO
-    # Flip to DEBUG temporarily to see exactly which filter/rule denies a
-    # request - the log line names the matched AuthorizationManager decision.
-    # org.springframework.security: DEBUG
-
+    com.taketwo: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG

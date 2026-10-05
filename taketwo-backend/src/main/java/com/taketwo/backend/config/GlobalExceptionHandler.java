@@ -37,18 +37,16 @@ public class GlobalExceptionHandler {
 
     // TMDB calls (popular/trending/search/cache-on-demand) throw this when the
     // API key is missing, invalid, or TMDB itself is unreachable/rate-limiting.
-    // Without this handler it fell through to a message-less 500.
     @ExceptionHandler(RestClientException.class)
     public ResponseEntity<Map<String, Object>> handleTmdbFailure(RestClientException ex) {
         return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                 .body(body("Could not reach TMDB - check TMDB_API_KEY and network access", 502));
     }
 
-    // Catch-all: Spring Boot's default error body omits "message" unless
-    // server.error.include-message is set, which is why unhandled exceptions
-    // were previously showing up as vague/blank errors on the frontend.
+    // Catch-all with stack trace printing enabled for debugging
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleUnexpected(Exception ex) {
+        ex.printStackTrace(); // Prints the exact line of code causing the error to your terminal
         return ResponseEntity.internalServerError().body(body("Something went wrong: " + ex.getMessage(), 500));
     }
 

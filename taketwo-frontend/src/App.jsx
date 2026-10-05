@@ -7,6 +7,7 @@ import ProfilePage from './pages/ProfilePage.jsx';
 import ListsPage from './pages/ListsPage.jsx';
 import MembersPage from './pages/MembersPage.jsx';
 import ActivityPage from './pages/ActivityPage.jsx';
+import TakeTwoPage from './pages/TakeTwoPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -58,6 +59,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <ListsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/take-two"
+          element={
+            <ProtectedRoute>
+              <TakeTwoPage />
             </ProtectedRoute>
           }
         />

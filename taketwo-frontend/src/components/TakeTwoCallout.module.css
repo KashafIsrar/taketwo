@@ -1,0 +1,28 @@
+/* components/TakeTwoCallout.module.css */
+.callout {
+  display: block;
+  background: linear-gradient(135deg, #1c2228, #14181c);
+  border: 1px solid #2c3440;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-decoration: none;
+  transition: border-color 0.15s, transform 0.15s;
+  margin-bottom: 2rem;
+}
+
+.callout:hover {
+  border-color: #00e054;
+  transform: translateY(-2px);
+}
+
+.callout h3 {
+  color: #fff;
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+}
+
+.callout p {
+  color: #9ab;
+  margin: 0;
+  font-size: 0.9rem;
+}

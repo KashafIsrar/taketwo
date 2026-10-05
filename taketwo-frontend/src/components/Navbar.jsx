@@ -31,6 +31,7 @@ export default function Navbar() {
         <Link to="/">Discover</Link>
         {isAuthenticated && (
           <>
+            <Link to="/take-two" style={{ color: '#00e054', fontWeight: 'bold' }}>Take Two</Link>
             <Link to="/activity">Activity</Link>
             <Link to="/members">Members</Link>
             <Link to="/diary">Diary</Link>
@@ -56,7 +57,6 @@ export default function Navbar() {
                 {user.displayName || user.username}
               </Link>
             ) : (
-              // Fallback if ID is missing: link to the members page so you can find your profile easily
               <Link to="/members" className={styles.username} style={{ textDecoration: 'none', color: '#00e054' }}>
                 {user?.displayName || user?.username || 'Profile'}
               </Link>
