@@ -54,4 +54,15 @@ public class Movie {
 
     @Column(name = "synced_at", nullable = false)
     private Instant syncedAt;
+
+    // Add to Movie.java, alongside the existing genres field
+
+@Builder.Default
+@ManyToMany(fetch = FetchType.LAZY)
+@JoinTable(
+        name = "movie_keywords",
+        joinColumns = @JoinColumn(name = "movie_id"),
+        inverseJoinColumns = @JoinColumn(name = "keyword_id")
+)
+private Set<Keyword> keywords = new HashSet<>();
 }

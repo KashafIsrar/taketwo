@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import api, { getUserProfile, searchMovies } from '../services/api';
 import FollowButton from '../components/FollowButton';
 import GamificationDashboard from '../components/GamificationDashboard.jsx';
+import TasteMatchBadge from '../components/TasteMatchBadge';
 
 const AVATAR_CATEGORIES = [
   {
@@ -261,15 +262,18 @@ export default function ProfilePage() {
                 </button>
               )}
               {!isSelf && (
-                <FollowButton
-                  targetUserId={userId}
-                  onStatusChange={(status) => {
-                    setProfile((prev) => ({
-                      ...prev,
-                      followerCount: status.following ? prev.followerCount + 1 : prev.followerCount - 1,
-                    }));
-                  }}
-                />
+                <>
+                  <TasteMatchBadge targetUserId={userId} />
+                  <FollowButton
+                    targetUserId={userId}
+                    onStatusChange={(status) => {
+                      setProfile((prev) => ({
+                        ...prev,
+                        followerCount: status.following ? prev.followerCount + 1 : prev.followerCount - 1,
+                      }));
+                    }}
+                  />
+                </>
               )}
             </div>
           </div>

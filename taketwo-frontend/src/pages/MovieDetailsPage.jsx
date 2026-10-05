@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import LogMovieModal from '../components/LogMovieModal.jsx';
+import MovieDnaPanel from '../components/MovieDnaPanel.jsx';
 import * as movieService from '../services/movieService';
 import { getUserLists, addMovieToList } from '../services/api';
 import styles from './MovieDetailsPage.module.css';
@@ -177,6 +178,9 @@ export default function MovieDetailsPage() {
             {loggedConfirmation && <p className={styles.confirmation}>Logged — check your diary.</p>}
           </div>
         </div>
+
+        {/* Movie DNA Panel rendered cleanly inside the component tree */}
+        <MovieDnaPanel tmdbId={movie.tmdbId} />
 
         <LogMovieModal
           movie={movie}

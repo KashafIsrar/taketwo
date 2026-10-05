@@ -1,0 +1,109 @@
+.container {
+  margin-top: 2rem;
+  background: #14181c;
+  border: 1px solid #2c3440;
+  border-radius: 8px;
+  padding: 1.5rem;
+  color: #fff;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.heading {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #9ab;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.matchBadge {
+  background: #00e054;
+  color: #14181c;
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+}
+
+.matchNum {
+  font-size: 1rem;
+}
+
+.vibeSection {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.label {
+  color: #678;
+  font-size: 0.9rem;
+}
+
+.tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.vibeTag {
+  background: #2c3440;
+  color: #9ab;
+  font-size: 0.8rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  border: 1px solid #404854;
+}
+
+.axesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.axisCard {
+  background: #101418;
+  border: 1px solid #222a35;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.axisTitle {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #678;
+  letter-spacing: 0.05em;
+}
+
+.axisValue {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.progressBar {
+  width: 100%;
+  height: 4px;
+  background: #2c3440;
+  border-radius: 2px;
+  margin-top: 0.4rem;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #00e054;
+  border-radius: 2px;
+}

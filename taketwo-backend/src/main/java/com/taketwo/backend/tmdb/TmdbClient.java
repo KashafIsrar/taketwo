@@ -3,6 +3,7 @@ package com.taketwo.backend.tmdb;
 import com.taketwo.backend.tmdb.dto.TmdbCreditsDto;
 import com.taketwo.backend.tmdb.dto.TmdbMovieDetailsDto;
 import com.taketwo.backend.tmdb.dto.TmdbMovieDto;
+import com.taketwo.backend.tmdb.dto.TmdbMovieKeywordsResponseDto;
 import com.taketwo.backend.tmdb.dto.TmdbPagedResponse;
 import com.taketwo.backend.tmdb.dto.TmdbPersonMovieCreditsDto;
 
@@ -161,5 +162,20 @@ public TmdbPagedResponse<TmdbMovieDto> discoverMoviesForTakeTwo(
             })
             .retrieve()
             .body(new ParameterizedTypeReference<>() {});
+}
+
+// Add to TmdbClient.java
+
+public TmdbMovieKeywordsResponseDto getMovieKeywords(Long tmdbId) {
+    try {
+        return restClient.get()
+                .uri(uriBuilder -> uriBuilder.path("/movie/{id}/keywords")
+                        .queryParam("api_key", apiKey)
+                        .build(tmdbId))
+                .retrieve()
+                .body(TmdbMovieKeywordsResponseDto.class);
+    } catch (HttpClientErrorException.NotFound ex) {
+        return null;
+    }
 }
 }

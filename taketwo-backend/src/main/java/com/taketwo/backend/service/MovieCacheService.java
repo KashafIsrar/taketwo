@@ -1,10 +1,12 @@
 package com.taketwo.backend.service;
 
 import com.taketwo.backend.entity.Genre;
+import com.taketwo.backend.entity.Keyword;
 import com.taketwo.backend.entity.Movie;
 import com.taketwo.backend.entity.MovieCredit;
 import com.taketwo.backend.entity.Person;
 import com.taketwo.backend.repository.GenreRepository;
+import com.taketwo.backend.repository.KeywordRepository;
 import com.taketwo.backend.repository.MovieCreditRepository;
 import com.taketwo.backend.repository.MovieRepository;
 import com.taketwo.backend.repository.PersonRepository;
@@ -27,6 +29,7 @@ public class MovieCacheService {
 
     private final MovieRepository movieRepository;
     private final GenreRepository genreRepository;
+    private final KeywordRepository keywordRepository;
     private final TmdbClient tmdbClient;
     private final MovieMapper movieMapper;
     private final PersonRepository personRepository;
@@ -36,17 +39,21 @@ public class MovieCacheService {
      * The core of "cache-on-demand": returns the locally persisted Movie for
      * this tmdbId, fetching + saving it from TMDB the first time anyone
      * views or logs it. Every subsequent call is a plain DB read.
-     * Also handles automatic credit backfilling for legacy cached items.
+     * Also handles automatic credit and keyword backfilling for legacy cached items.
      */
     @Transactional
     public Movie findOrCacheMovie(Long tmdbId) {
         Movie movie = movieRepository.findByTmdbId(tmdbId)
                 .orElseGet(() -> cacheFromTmdb(tmdbId));
 
-        // Backfill credits for movies cached before this feature existed -
-        // cache-on-demand still applies, it just also now covers credits.
+        // Backfill credits for movies cached before this feature existed
         if (movieCreditRepository.countByMovie_Id(movie.getId()) == 0) {
             cacheCredits(movie);
+        }
+        
+        // Backfill keywords for movies cached before this feature existed
+        if (movie.getKeywords().isEmpty()) {
+            cacheKeywords(movie);
         }
 
         return movie;
@@ -76,8 +83,9 @@ public class MovieCacheService {
 
         Movie savedMovie = movieRepository.save(movie);
         
-        // Immediately fetch and cache credits for newly cached movies
+        // Immediately fetch and cache credits & keywords for newly cached movies
         cacheCredits(savedMovie);
+        cacheKeywords(savedMovie);
 
         return savedMovie;
     }
@@ -120,5 +128,19 @@ public class MovieCacheService {
             movieCreditRepository.save(
                     MovieCredit.builder().movie(movie).person(person).role(role).billingOrder(billingOrder).build());
         }
+    }
+
+    private void cacheKeywords(Movie movie) {
+        var response = tmdbClient.getMovieKeywords(movie.getTmdbId());
+        if (response == null || response.keywords() == null) return;
+
+        Set<Keyword> keywords = response.keywords().stream()
+                .map(dto -> keywordRepository.findByTmdbKeywordId(dto.id())
+                        .orElseGet(() -> keywordRepository.save(
+                                Keyword.builder().tmdbKeywordId(dto.id()).name(dto.name()).build())))
+                .collect(Collectors.toSet());
+
+        movie.getKeywords().addAll(keywords);
+        movieRepository.save(movie);
     }
 }

@@ -76,7 +76,16 @@ public class TakeTwoService {
 
         candidates.sort(Comparator.comparingInt(ScoredCandidate::score).reversed());
 
-        ScoredCandidate chosen = selectWithinRuntimeCap(candidates, request.maxRuntimeMinutes());
+        // Pick randomly among the top-scoring candidates rather than always the
+        // single highest score - keeps quality while varying between submissions.
+        List<ScoredCandidate> topTier = candidates.stream().limit(Math.min(5, candidates.size())).toList();
+        ScoredCandidate randomTopPick = topTier.get(java.util.concurrent.ThreadLocalRandom.current().nextInt(topTier.size()));
+
+        List<ScoredCandidate> reordered = new ArrayList<>(topTier);
+        reordered.remove(randomTopPick);
+        reordered.add(0, randomTopPick);
+
+        ScoredCandidate chosen = selectWithinRuntimeCap(reordered, request.maxRuntimeMinutes());
         boolean directorReason = usedMomentum;
 
         return buildResponse(chosen, taste, directorReason);
@@ -88,7 +97,9 @@ public class TakeTwoService {
         var filmography = tmdbClient.getPersonFilmography(director.tmdbPersonId());
         if (filmography == null || filmography.crew() == null) return new ArrayList<>();
 
-        List<ScoredCandidate> results = new ArrayList<>();
+        List<ScoredCandidate> genreMatched = new ArrayList<>();
+        List<ScoredCandidate> allUnlogged = new ArrayList<>();
+
         for (var m : filmography.crew()) {
             if (alreadyLogged.contains(m.id())) {
                 continue;
@@ -96,16 +107,26 @@ public class TakeTwoService {
             int score = 60; // base score for momentum-driven picks
             List<String> tags = new ArrayList<>();
             tags.add("Director momentum: " + director.name());
-            if (m.genreIds() != null && m.genreIds().contains(genreId)) {
+            
+            boolean matchesGenre = m.genreIds() != null && m.genreIds().contains(genreId);
+            if (matchesGenre) {
                 score += 15;
                 tags.add(reverseGenreLookup(genreId));
             }
             if (m.voteAverage() != null) {
                 score += (int) Math.round(m.voteAverage()); // small tiebreaker
             }
-            results.add(new ScoredCandidate(m, score, tags));
+
+            ScoredCandidate candidate = new ScoredCandidate(m, score, tags);
+            allUnlogged.add(candidate);
+            if (matchesGenre) {
+                genreMatched.add(candidate);
+            }
         }
-        return results;
+        
+        // Require genre match when the director has any films in that genre -
+        // only fall back to their full filmography when they genuinely have none.
+        return genreMatched.isEmpty() ? allUnlogged : genreMatched;
     }
 
     private List<ScoredCandidate> candidatesFromDiscover(Integer genreId, TakeTwoRequest request, TasteProfileResponse taste, Set<Long> alreadyLogged) {
@@ -118,11 +139,17 @@ public class TakeTwoService {
             maxVotes = HIDDEN_GEM_MAX_VOTES;
         }
 
-        // Runtime is enforced server-side by TMDB here, so discover-mode
-        // candidates already respect the cap - momentum-mode (filmography
-        // results) can't filter by runtime this way, handled separately below.
+        // Randomize which page of TMDB's results we draw from (capped at 5)
+        // so every submission doesn't return the exact same candidate pool.
+        int randomPage = java.util.concurrent.ThreadLocalRandom.current().nextInt(1, 6);
+
         var page = tmdbClient.discoverMoviesForTakeTwo(
-                String.valueOf(genreId), request.maxRuntimeMinutes(), minVotes, maxVotes, 1);
+                String.valueOf(genreId), request.maxRuntimeMinutes(), minVotes, maxVotes, randomPage);
+
+        if (page == null || page.results() == null || page.results().isEmpty()) {
+            page = tmdbClient.discoverMoviesForTakeTwo(
+                    String.valueOf(genreId), request.maxRuntimeMinutes(), minVotes, maxVotes, 1);
+        }
 
         if (page == null || page.results() == null) return new ArrayList<>();
 
@@ -150,12 +177,6 @@ public class TakeTwoService {
         return results;
     }
 
-    // Momentum candidates can't be runtime-filtered server-side (no runtime
-    // field in filmography results), so we check the top few ranked
-    // candidates by actually caching/fetching full details, and fall back to
-    // the top pick (ignoring the cap, with an honest note) if none fit within
-    // a reasonable number of attempts - better than an expensive per-candidate
-    // TMDB call for the entire pool.
     private ScoredCandidate selectWithinRuntimeCap(List<ScoredCandidate> ranked, Integer maxRuntimeMinutes) {
         if (maxRuntimeMinutes == null) return ranked.get(0);
 

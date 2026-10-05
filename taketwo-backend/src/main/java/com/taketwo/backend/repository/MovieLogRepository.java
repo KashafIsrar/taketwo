@@ -1,6 +1,8 @@
 package com.taketwo.backend.repository;
 
 import com.taketwo.backend.dto.GenreAffinity;
+import com.taketwo.backend.dto.projection.KeywordAffinityProjection;
+import com.taketwo.backend.dto.projection.MovieRatingProjection;
 import com.taketwo.backend.dto.projection.MovieYearRating;
 import com.taketwo.backend.entity.MovieLog;
 import org.springframework.data.domain.Pageable;
@@ -76,4 +78,24 @@ List<MovieYearRating> findReleaseDateAndRatingByUserId(@Param("userId") UUID use
 // Excludes already-logged movies from TAKE TWO candidate pools
 @Query("select m.tmdbId from MovieLog ml join ml.movie m where ml.user.id = :userId")
 Set<Long> findLoggedTmdbIdsByUserId(@Param("userId") UUID userId);
+
+@Query("select new com.taketwo.backend.dto.projection.MovieRatingProjection(ml.movie.tmdbId, ml.rating) from MovieLog ml where ml.user.id = :userId")
+List<MovieRatingProjection> findTmdbIdAndRatingByUserId(@Param("userId") UUID userId);
+
+@Query("""
+        select ml from MovieLog ml
+        where ml.user.id = :userId and ml.rating >= :minRating
+        order by ml.rating desc, ml.createdAt desc
+        """)
+List<MovieLog> findHighlyRatedLogsByUserId(@Param("userId") UUID userId, @Param("minRating") Double minRating, Pageable pageable);
+
+// Add to MovieLogRepository.java
+
+@Query("""
+        select new com.taketwo.backend.dto.projection.KeywordAffinityProjection(k.name, count(distinct ml), avg(ml.rating))
+        from MovieLog ml join ml.movie m join m.keywords k
+        where ml.user.id = :userId
+        group by k.name
+        """)
+List<KeywordAffinityProjection> findKeywordAffinityByUserId(@Param("userId") UUID userId);
 }
