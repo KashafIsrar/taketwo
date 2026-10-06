@@ -11,6 +11,8 @@ import TakeTwoPage from './pages/TakeTwoPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import RegisterPage from './pages/RegisterPage.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import InboxPage from './pages/InboxPage.jsx';
+import ConversationPage from './pages/ConversationPage.jsx';
 
 export default function App() {
   return (
@@ -69,6 +71,22 @@ export default function App() {
               <TakeTwoPage />
             </ProtectedRoute>
           }
+        />
+        <Route 
+          path="/messages" 
+          element={
+            <ProtectedRoute>
+              <InboxPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/messages/:conversationId" 
+          element={
+            <ProtectedRoute>
+              <ConversationPage />
+            </ProtectedRoute>
+          } 
         />
       </Routes>
     </>

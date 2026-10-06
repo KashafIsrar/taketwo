@@ -50,6 +50,10 @@ public class User {
     @Column(name = "favorite_movies", columnDefinition = "json")
     private List<Map<String, Object>> favoriteMovies;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "blocked_users", columnDefinition = "json")
+    private List<String> blockedUsers;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 

@@ -1,3 +1,4 @@
+// services/api.js
 import axios from 'axios';
 
 // Base API configuration
@@ -76,6 +77,50 @@ export const searchMovies = async (query) => {
   const response = await api.get('/movies/search', {
     params: { q: query } // Changed from 'query' to 'q' to match MovieController
   });
+  return response.data;
+};
+
+// --- Messaging & Chat Endpoints ---
+export const getInbox = async () => {
+  const response = await api.get('/conversations');
+  return response.data;
+};
+
+export const getOrCreateDm = async (targetUserId) => {
+  const response = await api.post(`/conversations/dm/${targetUserId}`);
+  return response.data;
+};
+
+export const getMessages = async (conversationId, after) => {
+  const response = await api.get(`/conversations/${conversationId}/messages`, {
+    params: after ? { after } : {},
+  });
+  return response.data;
+};
+
+export const sendMessage = async (conversationId, content) => {
+  const response = await api.post(`/conversations/${conversationId}/messages`, { content });
+  return response.data;
+};
+
+export const markConversationRead = async (conversationId) => {
+  const response = await api.post(`/conversations/${conversationId}/read`);
+  return response.data;
+};
+
+// --- User Block Management Endpoints ---
+export const blockUser = async (userId) => {
+  const response = await api.post(`/users/${userId}/block`);
+  return response.data;
+};
+
+export const unblockUser = async (userId) => {
+  const response = await api.post(`/users/${userId}/unblock`);
+  return response.data;
+};
+
+export const getBlockedUsers = async () => {
+  const response = await api.get('/users/blocked');
   return response.data;
 };
 

@@ -7,7 +7,6 @@ import com.taketwo.backend.service.CurrentUserService;
 import com.taketwo.backend.service.UserProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,77 +22,77 @@ public class UserController {
     private final UserProfileService userProfileService;
     private final CurrentUserService currentUserService;
 
+    // Added {"/{id}", "/{id}/profile"} to support both endpoint forms
+    @GetMapping({ "/{id}", "/{id}/profile" })
+    public ResponseEntity<ProfileResponse> getProfile(@PathVariable UUID id, Authentication authentication) {
+        UUID currentUserId = (authentication != null && authentication.isAuthenticated())
+                ? currentUserService.getCurrentUser(authentication).getId()
+                : null;
+        return ResponseEntity.ok(userProfileService.getProfile(id, currentUserId));
+    }
+
     @GetMapping("/search")
-    public List<MemberSearchResponse> searchUsers(
-            @RequestParam(name = "q", required = false) String query,
-            Authentication authentication) {
-        User currentUser = authentication != null
-                && authentication.isAuthenticated()
-                && !(authentication instanceof AnonymousAuthenticationToken)
-                ? currentUserService.getCurrentUser(authentication)
+    public ResponseEntity<List<MemberSearchResponse>> searchUsers(@RequestParam String q, Authentication authentication) {
+        UUID currentUserId = (authentication != null && authentication.isAuthenticated())
+                ? currentUserService.getCurrentUser(authentication).getId()
                 : null;
-        return userProfileService.searchUsers(query, currentUser != null ? currentUser.getId() : null);
+        return ResponseEntity.ok(userProfileService.searchUsers(q, currentUserId));
     }
 
-    @GetMapping("/{userId}/profile")
-    public ProfileResponse getProfile(@PathVariable UUID userId, Authentication authentication) {
-        User currentUser = authentication != null
-                && authentication.isAuthenticated()
-                && !(authentication instanceof AnonymousAuthenticationToken)
-                ? currentUserService.getCurrentUser(authentication)
-                : null;
-        
-        return userProfileService.getProfile(userId, currentUser != null ? currentUser.getId() : null);
-    }
-
-    @PutMapping("/favorites")
-    public ResponseEntity<?> updateFavorites(
-            @RequestBody Map<String, Object> request,
-            Authentication authentication) {
-        
-        User currentUser = null;
-        try {
-            if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-                currentUser = currentUserService.getCurrentUser(authentication);
-            }
-        } catch (Exception e) {
-            // Fallback handled safely
-        }
-
-        if (currentUser == null) {
-            return ResponseEntity.status(401).body("Unauthorized: Please log in again.");
-        }
-
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> favoriteMovies = (List<Map<String, Object>>) request.get("favoriteMovies");
-        
-        userProfileService.updateFavoriteMovies(currentUser.getId(), favoriteMovies);
-        return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/profile")
+    @PutMapping("/{id}")
     public ResponseEntity<?> updateProfile(
-            @RequestBody Map<String, String> request,
-            Authentication authentication) {
-
-        User currentUser = null;
-        try {
-            if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
-                currentUser = currentUserService.getCurrentUser(authentication);
-            }
-        } catch (Exception e) {
-            // Fallback handled safely
+            @PathVariable UUID id,
+            @RequestBody Map<String, String> body,
+            Authentication authentication
+    ) {
+        User currentUser = currentUserService.getCurrentUser(authentication);
+        if (!currentUser.getId().equals(id)) {
+            return ResponseEntity.status(403).body("You can only edit your own profile.");
         }
 
-        if (currentUser == null) {
-            return ResponseEntity.status(401).body("Unauthorized: Please log in again.");
-        }
+        userProfileService.updateProfile(
+                id,
+                body.get("displayName"),
+                body.get("bio"),
+                body.get("profilePictureUrl")
+        );
 
-        String displayName = request.get("displayName");
-        String bio = request.get("bio");
-        String profilePictureUrl = request.get("profilePictureUrl");
-
-        userProfileService.updateProfile(currentUser.getId(), displayName, bio, profilePictureUrl);
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/favorites")
+    public ResponseEntity<?> updateFavorites(
+            @PathVariable UUID id,
+            @RequestBody List<Map<String, Object>> favoriteMovies,
+            Authentication authentication
+    ) {
+        User currentUser = currentUserService.getCurrentUser(authentication);
+        if (!currentUser.getId().equals(id)) {
+            return ResponseEntity.status(403).body("You can only edit your own favorites.");
+        }
+
+        userProfileService.updateFavoriteMovies(id, favoriteMovies);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/block")
+    public ResponseEntity<?> blockUser(@PathVariable UUID id, Authentication authentication) {
+        User currentUser = currentUserService.getCurrentUser(authentication);
+        userProfileService.blockUser(currentUser.getId(), id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/unblock")
+    public ResponseEntity<?> unblockUser(@PathVariable UUID id, Authentication authentication) {
+        User currentUser = currentUserService.getCurrentUser(authentication);
+        userProfileService.unblockUser(currentUser.getId(), id);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/blocked")
+    public ResponseEntity<List<MemberSearchResponse>> getBlockedUsers(Authentication authentication) {
+        User currentUser = currentUserService.getCurrentUser(authentication);
+        List<MemberSearchResponse> blocked = userProfileService.getBlockedUsers(currentUser.getId());
+        return ResponseEntity.ok(blocked);
     }
 }

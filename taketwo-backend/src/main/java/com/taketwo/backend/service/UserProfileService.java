@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -24,24 +25,52 @@ public class UserProfileService {
     private final FollowRepository followRepository;
 
     public ProfileResponse getProfile(UUID userId, UUID currentUserId) {
-    User user = userRepository.findById(userId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-    long totalLogged = movieLogRepository.countByUser_Id(userId);
-    Double averageRating = totalLogged > 0 ? movieLogRepository.findAverageRatingByUserId(userId) : null;
-    long followerCount = followRepository.countByFollowee_Id(userId);
-    long followingCount = followRepository.countByFollower_Id(userId);
+        long totalLogged = 0;
+        Double averageRating = null;
+        try {
+            totalLogged = movieLogRepository.countByUser_Id(userId);
+            if (totalLogged > 0) {
+                averageRating = movieLogRepository.findAverageRatingByUserId(userId);
+            }
+        } catch (Exception e) {
+            // Fallback gracefully if movie logs query fails
+        }
 
-    Boolean isFollowing = (currentUserId != null && !currentUserId.equals(userId))
-            ? followRepository.existsByFollower_IdAndFollowee_Id(currentUserId, userId)
-            : null;
+        long followerCount = 0;
+        long followingCount = 0;
+        try {
+            followerCount = followRepository.countByFollowee_Id(userId);
+            followingCount = followRepository.countByFollower_Id(userId);
+        } catch (Exception e) {
+            // Fallback gracefully if follow counts fail
+        }
 
-    return new ProfileResponse(
-            user.getId(), user.getUsername(), user.getDisplayName(), user.getBio(),
-            user.getProfilePictureUrl(), totalLogged, averageRating, followerCount, followingCount,
-            user.getFavoriteMovies(), isFollowing
-    );
-}
+        Boolean isFollowing = false;
+        try {
+            isFollowing = (currentUserId != null && !currentUserId.equals(userId))
+                    ? followRepository.existsByFollower_IdAndFollowee_Id(currentUserId, userId)
+                    : null;
+        } catch (Exception e) {
+            isFollowing = false;
+        }
+
+        return new ProfileResponse(
+                user.getId(), 
+                user.getUsername(), 
+                user.getDisplayName(), 
+                user.getBio(),
+                user.getProfilePictureUrl(), 
+                totalLogged, 
+                averageRating, 
+                followerCount, 
+                followingCount,
+                user.getFavoriteMovies() != null ? user.getFavoriteMovies() : List.of(), 
+                isFollowing
+        );
+    }
 
     public List<MemberSearchResponse> searchUsers(String query, UUID currentUserId) {
         String normalizedQuery = query == null ? "" : query.trim();
@@ -83,5 +112,57 @@ public class UserProfileService {
         user.setProfilePictureUrl(profilePictureUrl);
 
         userRepository.save(user);
+    }
+
+    public void blockUser(UUID currentUserId, UUID targetUserId) {
+        if (currentUserId.equals(targetUserId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You cannot block yourself.");
+        }
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (currentUser.getBlockedUsers() == null) {
+            currentUser.setBlockedUsers(new ArrayList<>());
+        }
+
+        String targetIdStr = targetUserId.toString();
+        if (!currentUser.getBlockedUsers().contains(targetIdStr)) {
+            currentUser.getBlockedUsers().add(targetIdStr);
+            userRepository.save(currentUser);
+        }
+    }
+
+    public void unblockUser(UUID currentUserId, UUID targetUserId) {
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (currentUser.getBlockedUsers() != null) {
+            currentUser.getBlockedUsers().remove(targetUserId.toString());
+            userRepository.save(currentUser);
+        }
+    }
+
+    public List<MemberSearchResponse> getBlockedUsers(UUID currentUserId) {
+        User currentUser = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (currentUser.getBlockedUsers() == null || currentUser.getBlockedUsers().isEmpty()) {
+            return List.of();
+        }
+
+        List<UUID> blockedUuids = currentUser.getBlockedUsers().stream()
+                .map(UUID::fromString)
+                .toList();
+
+        List<User> blockedUsersList = userRepository.findAllById(blockedUuids);
+
+        return blockedUsersList.stream()
+                .map(user -> new MemberSearchResponse(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getDisplayName(),
+                        followRepository.existsByFollower_IdAndFollowee_Id(currentUserId, user.getId())
+                ))
+                .toList();
     }
 }

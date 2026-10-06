@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import api, { getUserProfile, searchMovies } from '../services/api';
 import FollowButton from '../components/FollowButton';
@@ -73,6 +73,7 @@ const AVATAR_CATEGORIES = [
 export default function ProfilePage() {
   const { userId: paramUserId } = useParams();
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   const activeUserId = user?.id || user?.userId || localStorage.getItem('userId');
   const userId = paramUserId || activeUserId;
@@ -120,7 +121,7 @@ export default function ProfilePage() {
           setLoading(false);
         }
       })
-      .catch((err) => {
+      .catch(() => {
         if (active) {
           setError('Failed to load user profile');
           setLoading(false);
@@ -159,7 +160,7 @@ export default function ProfilePage() {
       try {
         const data = await searchMovies(searchQuery);
         setSearchResults(Array.isArray(data) ? data : data.results || []);
-      } catch (err) {
+      } catch {
         setSearchResults([]);
       } finally {
         setSearching(false);
@@ -168,6 +169,17 @@ export default function ProfilePage() {
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  const handleStartConversation = async () => {
+    try {
+      const res = await api.post(`/conversations/dm/${userId}`);
+      const conversationId = res.data.id || res.data._id || res.data.conversationId;
+      navigate(`/messages/${conversationId}`);
+    } catch (err) {
+      console.error('Failed to start conversation', err);
+      alert('Could not open conversation with this user.');
+    }
+  };
 
   const handleSelectMovieForSlot = async (movie) => {
     if (isSelectingSlot === null) return;
@@ -264,6 +276,12 @@ export default function ProfilePage() {
               {!isSelf && (
                 <>
                   <TasteMatchBadge targetUserId={userId} />
+                  <button 
+                    onClick={handleStartConversation}
+                    style={{ background: '#2c3440', color: '#fff', border: '1px solid #4c5460', padding: '0.5rem 1rem', borderRadius: '4px', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem' }}
+                  >
+                    Message
+                  </button>
                   <FollowButton
                     targetUserId={userId}
                     onStatusChange={(status) => {
@@ -372,7 +390,7 @@ export default function ProfilePage() {
 
       {activeTab === 'overview' && (
         <div style={{ color: '#9ab' }}>
-          <p>Welcome to {profile.username}'s profile overview.</p>
+          <p>Welcome to {profile.username}&apos;s profile overview.</p>
         </div>
       )}
       
