@@ -61,6 +61,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                         // Following/unfollowing someone requires a signed-in user.
                         .requestMatchers(HttpMethod.POST, "/api/users/*/follow").authenticated()
+                        // Add among the other GET permitAll rules, before anyRequest().authenticated():
+                        .requestMatchers(HttpMethod.GET, "/api/discussions/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {

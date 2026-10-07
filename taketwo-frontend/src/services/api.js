@@ -1,4 +1,3 @@
-// services/api.js
 import axios from 'axios';
 
 // Base API configuration
@@ -23,10 +22,10 @@ api.interceptors.response.use(
       localStorage.removeItem('taketwo_token');
     }
     return Promise.reject(error);
-  },
+  }
 );
 
-// --- Social System Endpoints ---
+// --- Feed & User Endpoints ---
 export const getActivityFeed = async () => {
   const response = await api.get('/feed');
   return response.data;
@@ -75,7 +74,7 @@ export const deleteList = async (listId) => {
 
 export const searchMovies = async (query) => {
   const response = await api.get('/movies/search', {
-    params: { q: query } // Changed from 'query' to 'q' to match MovieController
+    params: { q: query },
   });
   return response.data;
 };
@@ -103,8 +102,42 @@ export const sendMessage = async (conversationId, content) => {
   return response.data;
 };
 
-export const markConversationRead = async (conversationId) => {
+export const markRead = async (conversationId) => {
   const response = await api.post(`/conversations/${conversationId}/read`);
+  return response.data;
+};
+export const markConversationRead = markRead;
+
+export const createGroup = async (groupData) => {
+  const response = await api.post('/conversations/group', groupData);
+  return response.data;
+};
+
+export const getMutualFollowers = async (conversationId) => {
+  const url = conversationId
+    ? `/conversations/mutual-followers?conversationId=${conversationId}`
+    : '/conversations/mutual-followers';
+  const response = await api.get(url);
+  return response.data;
+};
+
+export const inviteToGroup = async (conversationId, targetUserId) => {
+  const response = await api.post(`/conversations/${conversationId}/invite`, { targetUserId });
+  return response.data;
+};
+
+export const kickFromGroup = async (conversationId, targetUserId) => {
+  const response = await api.delete(`/conversations/${conversationId}/kick/${targetUserId}`);
+  return response.data;
+};
+
+export const renameGroup = async (conversationId, name) => {
+  const response = await api.patch(`/conversations/${conversationId}/rename`, { name });
+  return response.data;
+};
+
+export const getParticipants = async (conversationId) => {
+  const response = await api.get(`/conversations/${conversationId}/participants`);
   return response.data;
 };
 
@@ -121,6 +154,51 @@ export const unblockUser = async (userId) => {
 
 export const getBlockedUsers = async () => {
   const response = await api.get('/users/blocked');
+  return response.data;
+};
+
+// --- Discussion Forum Endpoints ---
+export const getDiscussionPosts = async (tmdbId, sort = 'new') => {
+  const response = await api.get(`/discussions/movies/${tmdbId}/posts`, { params: { sort } });
+  return response.data;
+};
+
+export const createDiscussionPost = async (tmdbId, { title, body, isSpoiler }) => {
+  const response = await api.post(`/discussions/movies/${tmdbId}/posts`, { title, body, isSpoiler });
+  return response.data;
+};
+
+export const getDiscussionPost = async (postId) => {
+  const response = await api.get(`/discussions/posts/${postId}`);
+  return response.data;
+};
+
+export const voteOnPost = async (postId, voteType) => {
+  const response = await api.post(`/discussions/posts/${postId}/vote`, { voteType });
+  return response.data;
+};
+
+export const getTopLevelComments = async (postId) => {
+  const response = await api.get(`/discussions/posts/${postId}/comments`);
+  return response.data;
+};
+
+export const getReplies = async (commentId, page = 0, limit = 5) => {
+  const response = await api.get(`/discussions/comments/${commentId}/replies`, { params: { page, limit } });
+  return response.data;
+};
+
+export const addDiscussionComment = async (postId, { body, isSpoiler, parentCommentId }) => {
+  const response = await api.post(`/discussions/posts/${postId}/comments`, {
+    body,
+    isSpoiler,
+    parentCommentId: parentCommentId || null,
+  });
+  return response.data;
+};
+
+export const voteOnComment = async (commentId, voteType) => {
+  const response = await api.post(`/discussions/comments/${commentId}/vote`, { voteType });
   return response.data;
 };
 

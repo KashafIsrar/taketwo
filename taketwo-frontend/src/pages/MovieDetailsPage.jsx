@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import LogMovieModal from '../components/LogMovieModal.jsx';
 import MovieDnaPanel from '../components/MovieDnaPanel.jsx';
@@ -145,6 +145,10 @@ export default function MovieDetailsPage() {
               >
                 {onWatchlist ? '✓ On watchlist' : '+ Watchlist'}
               </button>
+
+              <Link to={`/discussions/movie/${movie.tmdbId}`} className={styles.btnSecondary}>
+                Discussion
+              </Link>
 
               {/* Add to List Controls */}
               {isAuthenticated && (

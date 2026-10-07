@@ -1,4 +1,3 @@
-// dto/ConversationSummaryResponse.java
 package com.taketwo.backend.dto;
 
 import java.time.Instant;
@@ -6,8 +5,11 @@ import java.util.UUID;
 
 public record ConversationSummaryResponse(
         UUID conversationId,
-        FollowUserSummary otherUser,   // null for GROUP conversations once those exist - step 1 is DM-only
-        String lastMessagePreview,     // null if no messages sent yet
+        String type,                // "DM" | "GROUP"
+        FollowUserSummary otherUser, // null for GROUP
+        String groupName,           // null for DM
+        int participantCount,
+        String lastMessagePreview,
         Instant lastMessageAt,
         boolean unread
 ) {}

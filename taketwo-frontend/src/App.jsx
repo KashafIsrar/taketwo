@@ -14,6 +14,12 @@ import ProtectedRoute from './components/ProtectedRoute.jsx';
 import InboxPage from './pages/InboxPage.jsx';
 import ConversationPage from './pages/ConversationPage.jsx';
 
+import DiscussionRoomPage from './pages/DiscussionRoomPage.jsx';
+import DiscussionPostPage from './pages/DiscussionPostPage.jsx';
+
+
+
+
 export default function App() {
   return (
     <>
@@ -88,6 +94,11 @@ export default function App() {
             </ProtectedRoute>
           } 
         />
+
+        <Route path="/discussions/movie/:tmdbId" element={<DiscussionRoomPage />} />
+<Route path="/discussions/post/:postId" element={<DiscussionPostPage />} />
+<Route path="/messages" element={<ProtectedRoute><InboxPage /></ProtectedRoute>} />
+<Route path="/messages/:conversationId" element={<ProtectedRoute><ConversationPage /></ProtectedRoute>} />
       </Routes>
     </>
   );
