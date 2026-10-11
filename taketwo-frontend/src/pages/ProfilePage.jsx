@@ -212,7 +212,8 @@ export default function ProfilePage() {
     e.preventDefault();
     setSavingProfile(true);
     try {
-      await api.put('/users/profile', {
+      // Use the current page's userId (which is a valid UUID) in the PUT request
+      await api.put(`/users/${userId}`, {
         displayName: editDisplayName,
         bio: editBio,
         profilePictureUrl: editProfilePictureUrl

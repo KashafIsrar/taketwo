@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
+import { motion } from 'framer-motion';
 
 function AxisBar({ label, result }) {
   const percent = ((result.score + 1) / 2) * 100; // -1..1 to 0..100
@@ -64,30 +65,36 @@ export default function MovieDnaPanel({ tmdbId }) {
 
   return (
     <div style={boxStyle}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h3 style={{ margin: 0, color: '#fff', fontSize: '1rem' }}>Movie DNA</h3>
-        {dna.matchPercent != null && (
-          <span style={{ background: '#14181c', border: '1px solid #00e054', color: '#00e054', padding: '0.2rem 0.7rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-            {dna.matchPercent}% matches your taste
-          </span>
+      <motion.div 
+        initial={{ opacity: 0, y: 12 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <h3 style={{ margin: 0, color: '#fff', fontSize: '1rem' }}>Movie DNA</h3>
+          {dna.matchPercent != null && (
+            <span style={{ background: '#14181c', border: '1px solid #00e054', color: '#00e054', padding: '0.2rem 0.7rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+              {dna.matchPercent}% matches your taste
+            </span>
+          )}
+        </div>
+
+        <AxisBar label="Pacing" result={dna.pacing} />
+        <AxisBar label="Tone" result={dna.tone} />
+        <AxisBar label="Complexity" result={dna.complexity} />
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.75rem' }}>
+          {dna.vibeTags.map((tag) => (
+            <span key={tag} style={{ background: '#14181c', border: '1px solid #2c3440', color: '#c1c8d0', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.8rem' }}>
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        {dna.source === 'GENRE' && (
+          <p style={{ color: '#667', fontSize: '0.75rem', margin: '0.75rem 0 0' }}>Estimated from genre</p>
         )}
-      </div>
-
-      <AxisBar label="Pacing" result={dna.pacing} />
-      <AxisBar label="Tone" result={dna.tone} />
-      <AxisBar label="Complexity" result={dna.complexity} />
-
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.75rem' }}>
-        {dna.vibeTags.map((tag) => (
-          <span key={tag} style={{ background: '#14181c', border: '1px solid #2c3440', color: '#c1c8d0', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.8rem' }}>
-            {tag}
-          </span>
-        ))}
-      </div>
-
-      {dna.source === 'GENRE' && (
-        <p style={{ color: '#667', fontSize: '0.75rem', margin: '0.75rem 0 0' }}>Estimated from genre</p>
-      )}
+      </motion.div>
     </div>
   );
 }

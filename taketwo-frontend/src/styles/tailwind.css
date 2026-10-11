@@ -1,0 +1,26 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme {
+  /* Surfaces */
+  --color-ink: #14181c;        /* page background */
+  --color-surface: #1c2228;    /* cards, panels, modals */
+  --color-surface-2: #232a31;  /* hover/raised surface */
+  --color-line: #2c3440;       /* borders and dividers */
+
+  /* Text */
+  --color-body: #c1c8d0;
+  --color-muted: #99aabb;      /* #9ab used throughout */
+  --color-faint: #666677;      /* #667 used throughout */
+
+  /* Accents */
+  --color-brand: #00e054;
+  --color-brand-dim: #00b845;  
+  --color-ember: #e06a2c;      
+  --color-danger: #ff4e4e;
+
+  /* Type */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+}
