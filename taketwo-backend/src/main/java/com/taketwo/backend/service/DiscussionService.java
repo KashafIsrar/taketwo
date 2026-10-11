@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +30,25 @@ public class DiscussionService {
     private final DiscussionCommentVoteRepository commentVoteRepository;
     private final MovieCacheService movieCacheService;
     private final MovieMapper movieMapper;
+
+
+    @Transactional
+public DiscussionPostResponse updatePost(User user, UUID postId, DiscussionPostRequest request) {
+    DiscussionPost post = requirePost(postId);
+
+    // Enforced server-side: hiding the Edit button in the UI is not security.
+    if (!post.getUser().getId().equals(user.getId())) {
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only edit your own posts");
+    }
+
+    post.setTitle(request.title());
+    post.setBody(request.body());
+    post.setSpoiler(request.isSpoiler());   // Lombok strips the "is" prefix for boolean setters
+    post.setUpdatedAt(Instant.now());
+    postRepository.save(post);
+
+    return toPostResponse(post, user.getId());
+}
 
     @Transactional
     public DiscussionPostResponse createPost(User user, Long tmdbId, DiscussionPostRequest request) {
@@ -157,18 +177,19 @@ public class DiscussionService {
     }
 
     private DiscussionPostResponse toPostResponse(DiscussionPost post, UUID currentUserId) {
-        long score = postVoteRepository.computeScore(post.getId());
-        String myVote = currentUserId == null ? null
-                : postVoteRepository.findByPost_IdAndUser_Id(post.getId(), currentUserId).map(v -> v.getVoteType().name()).orElse(null);
-        long commentCount = commentRepository.countByPost_Id(post.getId());
+    long score = postVoteRepository.computeScore(post.getId());
+    String myVote = currentUserId == null ? null
+            : postVoteRepository.findByPost_IdAndUser_Id(post.getId(), currentUserId).map(v -> v.getVoteType().name()).orElse(null);
+    long commentCount = commentRepository.countByPost_Id(post.getId());
 
-        User u = post.getUser();
-        return new DiscussionPostResponse(
-                post.getId(), movieMapper.toSummary(post.getMovie()),
-                new FollowUserSummary(u.getId(), u.getUsername(), u.getDisplayName()),
-                post.getTitle(), post.getBody(), post.isSpoiler(), score, myVote, commentCount, post.getCreatedAt()
-        );
-    }
+    User u = post.getUser();
+    return new DiscussionPostResponse(
+            post.getId(), movieMapper.toSummary(post.getMovie()),
+            new FollowUserSummary(u.getId(), u.getUsername(), u.getDisplayName()),
+            post.getTitle(), post.getBody(), post.isSpoiler(), score, myVote, commentCount,
+            post.getCreatedAt(), post.getUpdatedAt()
+    );
+}
 
     private DiscussionCommentResponse toCommentResponse(DiscussionComment comment, UUID currentUserId) {
         long score = commentVoteRepository.computeScore(comment.getId());

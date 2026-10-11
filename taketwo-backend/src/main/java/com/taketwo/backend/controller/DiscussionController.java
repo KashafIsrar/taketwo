@@ -92,4 +92,14 @@ public class DiscussionController {
         var user = currentUserService.getCurrentUser(authentication);
         return discussionService.voteComment(user, commentId, request.voteType());
     }
+
+    @PatchMapping("/posts/{postId}")
+public DiscussionPostResponse updatePost(
+        @PathVariable UUID postId,
+        @Valid @RequestBody DiscussionPostRequest request,
+        Authentication authentication
+) {
+    var user = currentUserService.getCurrentUser(authentication);
+    return discussionService.updatePost(user, postId, request);
+}
 }

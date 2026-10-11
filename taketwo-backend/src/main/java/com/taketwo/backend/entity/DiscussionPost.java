@@ -33,6 +33,10 @@ public class DiscussionPost {
     @Column(columnDefinition = "text", nullable = false)
     private String body;
 
+    // Add to DiscussionPost.java
+@Column(name = "updated_at")
+private Instant updatedAt;
+
     @Column(name = "is_spoiler", nullable = false)
     private boolean isSpoiler;
 

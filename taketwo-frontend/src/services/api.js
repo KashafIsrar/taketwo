@@ -201,5 +201,8 @@ export const voteOnComment = async (commentId, voteType) => {
   const response = await api.post(`/discussions/comments/${commentId}/vote`, { voteType });
   return response.data;
 };
-
+export const updateDiscussionPost = async (postId, { title, body, isSpoiler }) => {
+  const response = await api.patch(`/discussions/posts/${postId}`, { title, body, isSpoiler });
+  return response.data;
+};
 export default api;

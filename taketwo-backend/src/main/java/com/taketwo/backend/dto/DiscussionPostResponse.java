@@ -1,4 +1,3 @@
-// dto/DiscussionPostResponse.java
 package com.taketwo.backend.dto;
 
 import java.time.Instant;
@@ -14,5 +13,6 @@ public record DiscussionPostResponse(
         long score,
         String myVote,
         long commentCount,
-        Instant createdAt
+        Instant createdAt,
+        Instant updatedAt   // null if never edited
 ) {}

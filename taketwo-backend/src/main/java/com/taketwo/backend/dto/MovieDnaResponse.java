@@ -11,5 +11,6 @@ public record MovieDnaResponse(
         AxisResult pacing,
         AxisResult tone,
         AxisResult complexity,
-        Integer matchPercent   // null when logged out, or when the user has no taste data yet
+        Integer matchPercent,   // only computed for KEYWORDS-sourced profiles
+        String source           // "KEYWORDS" | "GENRE" | "NONE"
 ) {}

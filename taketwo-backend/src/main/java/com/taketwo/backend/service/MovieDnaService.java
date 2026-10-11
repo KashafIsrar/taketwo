@@ -1,12 +1,15 @@
 package com.taketwo.backend.service;
 
-import com.taketwo.backend.dto.*;
+import com.taketwo.backend.dto.AxisResult;
+import com.taketwo.backend.dto.MovieDnaResponse;
 import com.taketwo.backend.dto.projection.KeywordAffinityProjection;
+import com.taketwo.backend.entity.Genre;
 import com.taketwo.backend.entity.Keyword;
 import com.taketwo.backend.entity.Movie;
 import com.taketwo.backend.repository.MovieLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,11 +22,15 @@ public class MovieDnaService {
     private final MovieCacheService movieCacheService;
     private final MovieLogRepository movieLogRepository;
 
+    private record ResolvedTags(List<VibeTagCatalog.VibeTagDefinition> tags, String source) {}
+
+    // Transactional so the lazy keywords/genres collections are reliably
+    // readable here instead of depending on open-session-in-view.
+    @Transactional
     public MovieDnaResponse getMovieDna(Long tmdbId, UUID currentUserId) {
         Movie movie = movieCacheService.findOrCacheMovie(tmdbId);
-        Set<String> rawKeywords = movie.getKeywords().stream().map(Keyword::getName).collect(Collectors.toSet());
-
-        List<VibeTagCatalog.VibeTagDefinition> matched = catalog.resolveTags(rawKeywords);
+        ResolvedTags resolved = resolveTags(movie);
+        List<VibeTagCatalog.VibeTagDefinition> matched = resolved.tags();
 
         double pacing = 0, tone = 0, complexity = 0;
         for (var tag : matched) {
@@ -31,8 +38,7 @@ public class MovieDnaService {
             tone += tag.toneWeight();
             complexity += tag.complexityWeight();
         }
-        
-        int n = Math.max(1, matched.size());
+        int n = Math.max(1, matched.size());   // zero tags yields a neutral "Balanced" profile
 
         AxisResult pacingResult = toAxisResult(pacing / n, "Slow", "Balanced", "Fast");
         AxisResult toneResult = toAxisResult(tone / n, "Dark", "Balanced", "Light");
@@ -40,9 +46,29 @@ public class MovieDnaService {
 
         List<String> vibeTags = matched.stream().map(VibeTagCatalog.VibeTagDefinition::displayName).toList();
 
-        Integer matchPercent = currentUserId == null ? null : computeMatchPercent(currentUserId, vibeTags);
+        // The taste-match comparison is built from keyword-derived tags, so
+        // it's only meaningful for KEYWORDS profiles. Showing a percentage
+        // computed from genre-only tags would be a made-up number.
+        Integer matchPercent = (currentUserId != null && "KEYWORDS".equals(resolved.source()))
+                ? computeMatchPercent(currentUserId, vibeTags)
+                : null;
 
-        return new MovieDnaResponse(movie.getId(), movie.getTmdbId(), vibeTags, pacingResult, toneResult, complexityResult, matchPercent);
+        return new MovieDnaResponse(
+                movie.getId(), movie.getTmdbId(), vibeTags,
+                pacingResult, toneResult, complexityResult, matchPercent, resolved.source()
+        );
+    }
+
+    private ResolvedTags resolveTags(Movie movie) {
+        Set<String> rawKeywords = movie.getKeywords().stream().map(Keyword::getName).collect(Collectors.toSet());
+        var keywordTags = catalog.resolveTags(rawKeywords);
+        if (!keywordTags.isEmpty()) return new ResolvedTags(keywordTags, "KEYWORDS");
+
+        Set<String> genreNames = movie.getGenres().stream().map(Genre::getName).collect(Collectors.toSet());
+        var genreTags = catalog.resolveGenreTags(genreNames);
+        if (!genreTags.isEmpty()) return new ResolvedTags(genreTags, "GENRE");
+
+        return new ResolvedTags(List.of(), "NONE");
     }
 
     private AxisResult toAxisResult(double score, String negLabel, String neutralLabel, String posLabel) {

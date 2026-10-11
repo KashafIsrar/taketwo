@@ -18,19 +18,52 @@ function AxisBar({ label, result }) {
 
 export default function MovieDnaPanel({ tmdbId }) {
   const [dna, setDna] = useState(null);
+  const [status, setStatus] = useState('loading'); // 'loading' | 'ready' | 'error'
 
   useEffect(() => {
     let active = true;
+    setStatus('loading');
     api.get(`/movies/${tmdbId}/dna`)
-      .then((res) => { if (active) setDna(res.data); })
-      .catch(() => {});
+      .then((res) => {
+        if (active) {
+          setDna(res.data);
+          setStatus('ready');
+        }
+      })
+      .catch(() => {
+        if (active) setStatus('error');
+      });
     return () => { active = false; };
   }, [tmdbId]);
 
-  if (!dna || !dna.vibeTags || dna.vibeTags.length === 0) return null;
+  const boxStyle = { background: '#1c2228', border: '1px solid #2c3440', borderRadius: '8px', padding: '1.25rem', marginTop: '1.5rem' };
+
+  if (status === 'loading') {
+    return (
+      <div style={boxStyle}>
+        <p style={{ color: '#9ab', fontSize: '0.85rem', margin: 0 }}>Analyzing Movie DNA...</p>
+      </div>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <div style={boxStyle}>
+        <p style={{ color: '#9ab', fontSize: '0.85rem', margin: 0 }}>Movie DNA is unavailable right now.</p>
+      </div>
+    );
+  }
+
+  if (!dna || dna.source === 'NONE') {
+    return (
+      <div style={boxStyle}>
+        <p style={{ color: '#9ab', fontSize: '0.85rem', margin: 0 }}>Not enough data to build a Movie DNA profile for this film yet.</p>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ background: '#1c2228', border: '1px solid #2c3440', borderRadius: '8px', padding: '1.25rem', marginTop: '1.5rem' }}>
+    <div style={boxStyle}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h3 style={{ margin: 0, color: '#fff', fontSize: '1rem' }}>Movie DNA</h3>
         {dna.matchPercent != null && (
@@ -51,6 +84,10 @@ export default function MovieDnaPanel({ tmdbId }) {
           </span>
         ))}
       </div>
+
+      {dna.source === 'GENRE' && (
+        <p style={{ color: '#667', fontSize: '0.75rem', margin: '0.75rem 0 0' }}>Estimated from genre</p>
+      )}
     </div>
   );
 }

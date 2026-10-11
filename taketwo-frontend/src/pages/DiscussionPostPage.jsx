@@ -1,8 +1,70 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getDiscussionPost, getTopLevelComments, getReplies, addDiscussionComment, voteOnPost, voteOnComment } from '../services/api';
+import { 
+  getDiscussionPost, 
+  getTopLevelComments, 
+  getReplies, 
+  addDiscussionComment, 
+  voteOnPost, 
+  voteOnComment,
+  updateDiscussionPost 
+} from '../services/api';
 import SpoilerText from '../components/SpoilerText';
 import VoteControls from '../components/VoteControls';
+import { useAuth } from '../context/AuthContext.jsx';
+
+function EditPostForm({ post, onSaved, onCancel }) {
+  const [title, setTitle] = useState(post.title);
+  const [body, setBody] = useState(post.body);
+  const [isSpoiler, setIsSpoiler] = useState(post.isSpoiler);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!title.trim() || !body.trim()) return;
+    setSaving(true);
+    setError('');
+    try {
+      const updated = await updateDiscussionPost(post.postId, { title: title.trim(), body: body.trim(), isSpoiler });
+      onSaved(updated);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not save changes.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        maxLength={200}
+        style={{ padding: '0.6rem', background: '#14181c', border: '1px solid #2c3440', borderRadius: '4px', color: '#fff' }}
+      />
+      <textarea
+        value={body}
+        onChange={(e) => setBody(e.target.value)}
+        rows={5}
+        style={{ padding: '0.6rem', background: '#14181c', border: '1px solid #2c3440', borderRadius: '4px', color: '#fff', resize: 'vertical' }}
+      />
+      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fff', fontSize: '0.85rem' }}>
+        <input type="checkbox" checked={isSpoiler} onChange={(e) => setIsSpoiler(e.target.checked)} />
+        Contains spoilers
+      </label>
+      {error && <p style={{ color: '#ff4e4e', fontSize: '0.85rem', margin: 0 }}>{error}</p>}
+      <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <button type="submit" disabled={saving} style={{ background: '#00e054', border: 'none', color: '#14181c', padding: '0.5rem 1.2rem', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}>
+          {saving ? 'Saving...' : 'Save'}
+        </button>
+        <button type="button" onClick={onCancel} style={{ background: 'none', border: '1px solid #2c3440', color: '#9ab', padding: '0.5rem 1.2rem', borderRadius: '4px', cursor: 'pointer' }}>
+          Cancel
+        </button>
+      </div>
+    </form>
+  );
+}
 
 function ReplyThread({ comment, onVote }) {
   const [replies, setReplies] = useState([]);
@@ -79,12 +141,16 @@ function ReplyThread({ comment, onVote }) {
 
 export default function DiscussionPostPage() {
   const { postId } = useParams();
+  const { user } = useAuth();
+  const currentUserId = user?.id || user?.userId || localStorage.getItem('userId');
+
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState('');
   const [commentSpoiler, setCommentSpoiler] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   function loadAll() {
     setLoading(true);
@@ -126,6 +192,8 @@ export default function DiscussionPostPage() {
 
   if (loading || !post) return <div style={{ padding: '2rem', color: '#9ab' }}>Loading...</div>;
 
+  const isAuthor = String(post.user.userId) === String(currentUserId);
+
   return (
     <div style={{ maxWidth: '700px', margin: '0 auto', padding: '2rem 1.5rem', color: '#fff' }}>
       <Link to={`/discussions/movie/${post.movie.tmdbId}`} style={{ color: '#9ab', textDecoration: 'none', fontSize: '0.85rem' }}>&larr; Back to discussion</Link>
@@ -133,9 +201,31 @@ export default function DiscussionPostPage() {
       <div style={{ background: '#1c2228', border: '1px solid #2c3440', borderRadius: '8px', padding: '1.5rem', margin: '1rem 0 1.5rem', display: 'flex', gap: '1rem' }}>
         <VoteControls score={post.score} myVote={post.myVote} onVote={handlePostVote} />
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: '1.4rem', margin: '0 0 0.25rem' }}>{post.title}</h1>
-          <p style={{ color: '#667', fontSize: '0.8rem', margin: '0 0 0.75rem' }}>@{post.user.username}</p>
-          <SpoilerText text={post.body} isSpoiler={post.isSpoiler} style={{ color: '#c1c8d0', margin: 0 }} />
+          {editing ? (
+            <EditPostForm
+              post={post}
+              onSaved={(updated) => { setPost(updated); setEditing(false); }}
+              onCancel={() => setEditing(false)}
+            />
+          ) : (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                <h1 style={{ fontSize: '1.4rem', margin: '0 0 0.25rem' }}>{post.title}</h1>
+                {isAuthor && (
+                  <button
+                    onClick={() => setEditing(true)}
+                    style={{ background: 'none', border: '1px solid #2c3440', color: '#9ab', padding: '0.3rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', flexShrink: 0 }}
+                  >
+                    Edit
+                  </button>
+                )}
+              </div>
+              <p style={{ color: '#667', fontSize: '0.8rem', margin: '0 0 0.75rem' }}>
+                @{post.user.username}{post.updatedAt && ' - edited'}
+              </p>
+              <SpoilerText text={post.body} isSpoiler={post.isSpoiler} style={{ color: '#c1c8d0', margin: 0 }} />
+            </>
+          )}
         </div>
       </div>
 
